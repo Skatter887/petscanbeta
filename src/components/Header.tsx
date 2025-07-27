@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Menu, X } from 'lucide-react';
+import { Search, FileText, Heart, HelpCircle, MessageCircle, Menu, X, Settings, Search as SearchBold } from 'lucide-react';
 import ContactModal from './ContactModal';
 import { useNavigate } from 'react-router-dom';
 import PetScanLogo from './PetScanLogo';
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -27,22 +26,20 @@ const Header = () => {
         element.scrollIntoView({ behavior: 'smooth' });
       }
     }
-    setIsMenuOpen(false);
   };
 
   const navigateToAboutUs = () => {
     navigate('/chi-ce-dietro');
-    setIsMenuOpen(false);
   };
 
   const navigateToHome = () => {
     navigate('/');
-    setIsMenuOpen(false);
   };
 
   return (
     <>
-      <header className="bg-white shadow-sm sticky top-0 z-40 border-b border-green-100">
+      {/* Desktop Header - visibile solo su desktop */}
+      <header className="hidden md:block bg-white shadow-sm sticky top-0 z-40 border-b border-green-100">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Integrated Logo & Brand */}
@@ -79,7 +76,7 @@ const Header = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="flex items-center space-x-8">
               <button 
                 onClick={() => scrollToSection('come-funziona')}
                 className="text-gray-600 hover:text-green-600 font-medium transition-colors"
@@ -119,63 +116,74 @@ const Header = () => {
                 Contattaci
               </Button>
             </nav>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
           </div>
-
-          {/* Mobile Menu */}
-          {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-green-100">
-              <nav className="flex flex-col space-y-4">
-                <button 
-                  onClick={() => scrollToSection('come-funziona')}
-                  className="text-gray-600 hover:text-green-600 font-medium transition-colors text-left"
-                >
-                  Come funziona
-                </button>
-                <button 
-                  onClick={() => scrollToSection('prodotti')}
-                  className="text-gray-600 hover:text-green-600 font-medium transition-colors text-left"
-                >
-                  Esempi
-                </button>
-                <button 
-                  onClick={() => scrollToSection('faq')}
-                  className="text-gray-600 hover:text-green-600 font-medium transition-colors text-left"
-                >
-                  FAQ
-                </button>
-                <button 
-                  onClick={navigateToAboutUs}
-                  className="text-gray-600 hover:text-green-600 font-medium transition-colors text-left"
-                >
-                  Chi c'è dietro ❤️
-                </button>
-                <Button 
-                  onClick={() => scrollToSection('analisi-form')}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 w-full"
-                >
-                  Analizza ora
-                </Button>
-                <Button 
-                  onClick={() => setIsContactModalOpen(true)}
-                  variant="outline"
-                  className="border-green-200 hover:border-green-300 text-green-700 rounded-full font-semibold w-full"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Contattaci
-                </Button>
-              </nav>
-            </div>
-          )}
         </div>
       </header>
+
+      {/* Mobile Bottom Navigation Bar - visibile solo su mobile */}
+      <nav className="md:hidden mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[9999] bg-white/50 backdrop-blur-md shadow-2xl" style={{ bottom: '60px' }}>
+        <div className="flex items-center justify-around px-4 py-2.5 max-w-md mx-auto" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+          {/* Guida */}
+          <button
+            onClick={() => scrollToSection('come-funziona')}
+            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <div className="w-6 h-6 mb-1 flex items-center justify-center">
+              <Settings className="w-5 h-5" style={{ color: '#16a34a', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            </div>
+            <span className="text-xs font-bold" style={{ color: '#16a34a', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>Guida</span>
+          </button>
+
+          {/* Analisi */}
+          <button
+            onClick={() => scrollToSection('prodotti')}
+            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <div className="w-6 h-6 mb-1 flex items-center justify-center">
+              <FileText className="w-5 h-5" style={{ color: '#ea580c', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            </div>
+            <span className="text-xs font-bold" style={{ color: '#ea580c', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>Analisi</span>
+          </button>
+
+          {/* Scannerizza - Pulsante centrale semplificato */}
+          <button
+            onClick={() => scrollToSection('scannerizza-form')}
+            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <div className="w-10 h-10 mb-1 flex items-center justify-center">
+              <Search className="w-8 h-8" style={{ color: '#000000', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', strokeWidth: '5' }} />
+            </div>
+            <span className="text-xs font-bold" style={{ color: '#000000', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>Scannerizza</span>
+          </button>
+
+          {/* Chi Siamo */}
+          <button
+            onClick={navigateToAboutUs}
+            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <div className="w-6 h-6 mb-1 flex items-center justify-center">
+              <Heart className="w-5 h-5" style={{ color: '#ea580c', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            </div>
+            <span className="text-xs font-bold" style={{ color: '#ea580c', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>Chi Siamo</span>
+          </button>
+
+          {/* FAQ */}
+          <button
+            onClick={() => scrollToSection('faq')}
+            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            <div className="w-6 h-6 mb-1 flex items-center justify-center">
+              <HelpCircle className="w-5 h-5" style={{ color: '#16a34a', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            </div>
+            <span className="text-xs font-bold" style={{ color: '#16a34a', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>FAQ</span>
+          </button>
+        </div>
+      </nav>
 
       <ContactModal 
         isOpen={isContactModalOpen} 

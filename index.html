@@ -3,11 +3,14 @@
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <!-- Camera permissions for mobile devices -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- iOS Safari specific meta tags for fixed bottom navigation -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
     <title>PetScan - Analisi alimentazione cani e gatti | Come Yuka per animali</title>
     <meta name="description" content="PetScan è il primo servizio in Italia per analizzare l'alimentazione di cani e gatti. Scopri se il cibo che dai è sano, sicuro e adatto al tuo animale. Come Yuka, ma per i tuoi amici a quattro zampe. Analisi gratuita con intelligenza artificiale avanzata." />
     <meta name="author" content="PetScan" />
@@ -37,11 +40,48 @@
     <!-- Favicon and App Icons -->
     <link rel="icon" type="image/png" href="/petscan-logo.png" sizes="96x96" />
     <link rel="apple-touch-icon" href="/lovable-uploads/a33f1742-394c-45a9-8f25-eb7357254f92.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- iOS Safari CSS fixes for fixed bottom navigation -->
+    <style>
+      /* iOS Safari specific fixes */
+      @supports (padding: max(0px)) {
+        .mobile-bottom-nav {
+          padding-bottom: max(calc(0.75rem + env(safe-area-inset-bottom)), 1.5rem);
+        }
+      }
+      
+      /* Force fixed positioning on iOS */
+      .mobile-bottom-nav {
+        position: fixed !important;
+        bottom: 60px !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 9999 !important;
+        background: rgba(255, 255, 255, 0.5) !important;
+        backdrop-filter: blur(12px) !important;
+        box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.1), 0 -4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        border-top-left-radius: 20px !important;
+        border-top-right-radius: 20px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+      }
+      
+      /* Prevent iOS Safari from hiding fixed elements */
+      body {
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Ensure proper viewport handling */
+      html, body {
+        height: 100%;
+        overflow-x: hidden;
+      }
+    </style>
     
     <!-- Structured Data -->
     <script type="application/ld+json">

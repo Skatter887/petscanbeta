@@ -7,6 +7,36 @@ import { Search, ScanLine, X } from 'lucide-react';
 import { useProductAnalysis } from '@/hooks/useProductAnalysis';
 import BarcodeScanner from './BarcodeScanner';
 
+// Animazioni CSS personalizzate per le zampette decorative
+const pawAnimations = `
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 0.3;
+      transform: translate(-50%, -50%) scale(0.8);
+    }
+    50% {
+      opacity: 0.8;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+
+  @keyframes rainbow-border {
+    0% {
+      background-position: 300% 50%;
+    }
+    50% {
+      background-position: 150% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+`;
+
 const CATEGORIES = [
   'Tutte',
   'Cani',
@@ -14,96 +44,233 @@ const CATEGORIES = [
   // ...altre categorie se vuoi
 ];
 
-// Animazioni floating per avatar
-const floatingAnimations = [
-  'animate-float-slow',
-  'animate-float-medium',
-  'animate-float-fast',
-  'animate-float-center',
-  'animate-float-medium',
-  'animate-float-slow',
-  'animate-float-fast',
-];
+// Componente per la singola zampetta animata
+const AnimatedPawPrint = ({ 
+  position, 
+  delay, 
+  color, 
+  isVisible,
+  side 
+}: { 
+  position: { x: number; y: number }; 
+  delay: number; 
+  color: string; 
+  isVisible: boolean;
+  side: 'left' | 'right';
+}) => {
+  return (
+    <div
+      className="absolute w-6 h-6 transition-all duration-600 ease-out pointer-events-none select-none"
+      style={{
+        left: `${position.x}%`,
+        top: `${position.y}%`,
+        transform: `translate(-50%, -50%) ${side === 'left' ? 'rotate(-10deg)' : 'rotate(10deg)'}`,
+        opacity: isVisible ? 1 : 0,
+        scale: isVisible ? 1 : 0.3,
+        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+      }}
+    >
+      {/* Zampetta SVG realistica */}
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        className="w-full h-full"
+        style={{ color }}
+      >
+        {/* Pad principale (cuscinetto centrale) */}
+        <ellipse
+          cx="12"
+          cy="18"
+          rx="3.5"
+          ry="2.5"
+          fill="currentColor"
+          opacity="0.9"
+        />
+        {/* Pads delle dita - 4 dita realistiche */}
+        <ellipse
+          cx="7"
+          cy="10"
+          rx="1.8"
+          ry="1.2"
+          fill="currentColor"
+          opacity="0.8"
+        />
+        <ellipse
+          cx="11"
+          cy="8"
+          rx="1.5"
+          ry="1"
+          fill="currentColor"
+          opacity="0.8"
+        />
+        <ellipse
+          cx="15"
+          cy="10"
+          rx="1.8"
+          ry="1.2"
+          fill="currentColor"
+          opacity="0.8"
+        />
+        <ellipse
+          cx="9"
+          cy="6"
+          rx="1.2"
+          ry="0.8"
+          fill="currentColor"
+          opacity="0.7"
+        />
+      </svg>
+    </div>
+  );
+};
 
-function getRandomUnique(arr: string[], n: number) {
-  const shuffled = arr.slice().sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, n);
-}
+// Componente per la zampetta decorativa pulsante
+const DecorativePawPrint = ({ 
+  position, 
+  color, 
+  size, 
+  delay 
+}: { 
+  position: { x: number; y: number }; 
+  color: string; 
+  size: string; 
+  delay: number; 
+}) => {
+  return (
+    <div
+      className={`absolute ${size} pointer-events-none select-none animate-pulse-slow`}
+      style={{
+        left: `${position.x}%`,
+        top: `${position.y}%`,
+        transform: 'translate(-50%, -50%)',
+        animationDelay: `${delay}s`,
+        animationDuration: '3s',
+        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.05))',
+      }}
+    >
+      {/* Zampetta SVG migliorata - più riconoscibile come impronta di pet */}
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        className="w-full h-full"
+        style={{ color }}
+      >
+        {/* Pad principale (cuscinetto centrale) - più grande e definito */}
+        <ellipse
+          cx="12"
+          cy="18"
+          rx="4.5"
+          ry="3.5"
+          fill="currentColor"
+          opacity="0.9"
+        />
+        {/* Pads delle dita - 4 dita ben definite e realistiche */}
+        <ellipse
+          cx="7"
+          cy="10"
+          rx="2.2"
+          ry="1.5"
+          fill="currentColor"
+          opacity="0.8"
+        />
+        <ellipse
+          cx="11"
+          cy="8"
+          rx="1.8"
+          ry="1.2"
+          fill="currentColor"
+          opacity="0.8"
+        />
+        <ellipse
+          cx="15"
+          cy="10"
+          rx="2.2"
+          ry="1.5"
+          fill="currentColor"
+          opacity="0.8"
+        />
+        <ellipse
+          cx="9"
+          cy="6"
+          rx="1.5"
+          ry="1"
+          fill="currentColor"
+          opacity="0.7"
+        />
+        {/* Aggiungo piccoli dettagli per renderle più realistiche */}
+        <ellipse
+          cx="13"
+          cy="6"
+          rx="1.3"
+          ry="0.9"
+          fill="currentColor"
+          opacity="0.7"
+        />
+      </svg>
+    </div>
+  );
+};
 
-function getRandomUniqueOrRepeat(arr: string[], n: number) {
-  // Filtra solo immagini realmente valide
-  const valid = arr.filter(img => img && img.startsWith('http'));
-  if (valid.length === 0) return Array(n).fill('https://placehold.co/200x200?text=Prodotto');
-  // Ricicla ciclicamente se meno di n
-  const result = [];
-  let i = 0;
-  while (result.length < n) {
-    result.push(valid[i % valid.length]);
-    i++;
+// Genera traiettoria verticale dal basso verso l'alto
+const generateVerticalPawTrajectory = (isMobile: boolean) => {
+  const steps = isMobile ? 8 : 6; // 8 zampette per lato su mobile, 6 su desktop
+  const leftTrajectory = [];
+  const rightTrajectory = [];
+  
+  // Posizioni di partenza (sotto HeroContent)
+  const startY = 85; // Sotto HeroContent
+  const endY = 5; // Sopra il logo
+  const stepHeight = (startY - endY) / (steps - 1);
+  
+  for (let i = 0; i < steps; i++) {
+    const progress = i / (steps - 1);
+    
+    // Traiettoria verticale con leggero offset laterale
+    const leftX = 25 + Math.sin(progress * Math.PI * 0.5) * 3; // Leggera curva sinistra
+    const rightX = 75 + Math.sin(progress * Math.PI * 0.5) * 3; // Leggera curva destra
+    const y = startY - (progress * (startY - endY));
+    
+    // Colori alternati
+    const color = i % 2 === 0 ? '#6ee7b7' : '#fdba74'; // Verde acqua e arancione pesca
+    
+    leftTrajectory.push({
+      position: { x: leftX, y },
+      color,
+      delay: i * 500, // 500ms di ritardo tra ogni zampetta (più spazio)
+      side: 'left' as const
+    });
+    
+    rightTrajectory.push({
+      position: { x: rightX, y },
+      color,
+      delay: i * 500 + 250, // Offset di 250ms per la destra
+      side: 'right' as const
+    });
   }
-  // Shuffle per non avere sempre la stessa sequenza
-  for (let j = result.length - 1; j > 0; j--) {
-    const k = Math.floor(Math.random() * (j + 1));
-    [result[j], result[k]] = [result[k], result[j]];
-  }
-  return result;
-}
+  
+  return [...leftTrajectory, ...rightTrajectory];
+};
 
-function getExactlyNProductImages(arr: string[], n: number) {
-  // Filtra solo immagini prodotto realmente valide
-  const valid = arr.filter(img => img && img.startsWith('http'));
-  if (valid.length === 0) return Array(n).fill(''); // fallback estremo, ma non succede mai con db reale
-  // Ricicla ciclicamente se meno di n
-  const result = [];
-  let i = 0;
-  while (result.length < n) {
-    result.push(valid[i % valid.length]);
-    i++;
-  }
-  return result;
-}
-
-function getExactlyNProductImagesNoDuplicates(arr: string[], n: number) {
-  // Filtra solo immagini prodotto realmente valide
-  const valid = arr.filter(img => img && img.startsWith('http'));
-  // Shuffle random ad ogni reload
-  const shuffled = valid.slice().sort(() => 0.5 - Math.random());
-  if (shuffled.length >= n) return shuffled.slice(0, n);
-  // Se meno di n, ricicla ma mai duplicati consecutivi
-  const result = [];
-  let i = 0;
-  while (result.length < n) {
-    const next = shuffled[i % shuffled.length];
-    if (result.length === 0 || result[result.length - 1] !== next) {
-      result.push(next);
-    } else {
-      // Se duplicato consecutivo, prendi il successivo
-      result.push(shuffled[(i + 1) % shuffled.length]);
-      i++;
-    }
-    i++;
-  }
-  return result;
-}
-
-const getPawLayout = (isMobile: boolean) =>
-  isMobile
-    ? [
-        { x: '50%', y: '0%', size: 'w-20 h-20', z: 'z-30' }, // centrale grande
-        { x: '18%', y: '18%', size: 'w-12 h-12', z: 'z-20' }, // medio sx
-        { x: '82%', y: '18%', size: 'w-16 h-16', z: 'z-20' }, // medio dx
-        { x: '10%', y: '45%', size: 'w-10 h-10', z: 'z-10' }, // piccolo sx
-        { x: '90%', y: '45%', size: 'w-14 h-14', z: 'z-10' }, // piccolo dx
-      ]
-    : [
-        { x: '50%', y: '0%', size: 'w-12 h-12 md:w-32 md:h-32', z: 'z-30' },
-        { x: '30%', y: '10%', size: 'w-8 h-8 md:w-20 md:h-20', z: 'z-20' },
-        { x: '70%', y: '10%', size: 'w-8 h-8 md:w-20 md:h-20', z: 'z-20' },
-        { x: '15%', y: '35%', size: 'w-6 h-6 md:w-14 md:h-14', z: 'z-10' },
-        { x: '85%', y: '35%', size: 'w-6 h-6 md:w-14 md:h-14', z: 'z-10' },
-        { x: '35%', y: '40%', size: 'w-8 h-8 md:w-16 md:h-16', z: 'z-10' },
-        { x: '65%', y: '40%', size: 'w-8 h-8 md:w-16 md:h-16', z: 'z-10' },
-      ];
+// Genera posizioni decorative per le zampette
+const generateDecorativePawPositions = () => {
+  return [
+    // Zampette laterali sinistre - solo ai bordi, non sopra il testo
+    { x: 5, y: 20, size: 'w-6 h-6', color: '#6ee7b7', delay: 0 },
+    { x: 8, y: 35, size: 'w-8 h-8', color: '#fdba74', delay: 0.5 },
+    { x: 6, y: 50, size: 'w-6 h-6', color: '#6ee7b7', delay: 1 },
+    { x: 10, y: 65, size: 'w-7 h-7', color: '#fdba74', delay: 1.5 },
+    { x: 7, y: 80, size: 'w-6 h-6', color: '#6ee7b7', delay: 2 },
+    { x: 9, y: 95, size: 'w-8 h-8', color: '#fdba74', delay: 2.5 },
+    
+    // Zampette laterali destre - solo ai bordi, non sopra il testo
+    { x: 95, y: 20, size: 'w-6 h-6', color: '#fdba74', delay: 0.2 },
+    { x: 92, y: 35, size: 'w-8 h-8', color: '#6ee7b7', delay: 0.7 },
+    { x: 94, y: 50, size: 'w-6 h-6', color: '#fdba74', delay: 1.2 },
+    { x: 90, y: 65, size: 'w-7 h-7', color: '#6ee7b7', delay: 1.7 },
+    { x: 93, y: 80, size: 'w-6 h-6', color: '#fdba74', delay: 2.2 },
+    { x: 91, y: 95, size: 'w-8 h-8', color: '#6ee7b7', delay: 2.7 },
+  ];
+};
 
 const HeroSection = () => {
   const [search, setSearch] = useState('');
@@ -116,7 +283,18 @@ const HeroSection = () => {
   const [productTitles, setProductTitles] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const [productSuggestions, setProductSuggestions] = useState<{label: string, value: string}[]>([]);
+  const [productSuggestions, setProductSuggestions] = useState<{
+    label: string;
+    value: string;
+    type: 'brand-title' | 'title' | 'brand' | 'ean';
+    ean: number;
+    brand: string;
+    title: string;
+  }[]>([]);
+  
+  // Stato per l'animazione delle zampette
+  const [pawAnimationStep, setPawAnimationStep] = useState(0);
+  const [isPawAnimationActive, setIsPawAnimationActive] = useState(false);
 
   const {
     analysisResult,
@@ -135,27 +313,165 @@ const HeroSection = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Animazione delle zampette
+  useEffect(() => {
+    if (!isMobile) return; // Solo su mobile
+    
+    const startPawAnimation = () => {
+      setIsPawAnimationActive(true);
+      setPawAnimationStep(0);
+      
+      // Avvia la sequenza di zampette
+      const trajectory = generateVerticalPawTrajectory(isMobile);
+      const totalDuration = trajectory.length * 500 + 2000; // 500ms per zampetta + 2s finale
+      
+      // Mostra zampette in sequenza
+      trajectory.forEach((_, index) => {
+        setTimeout(() => {
+          setPawAnimationStep(index + 1);
+        }, index * 500);
+      });
+      
+      // Reset dopo il completamento
+      setTimeout(() => {
+        setIsPawAnimationActive(false);
+        setPawAnimationStep(0);
+        
+        // Riavvia l'animazione dopo 7 secondi (6-8 secondi come richiesto)
+        setTimeout(startPawAnimation, 7000);
+      }, totalDuration);
+    };
+    
+    // Avvia la prima animazione
+    const initialDelay = setTimeout(startPawAnimation, 1000);
+    
+    return () => clearTimeout(initialDelay);
+  }, [isMobile]);
+
   useEffect(() => {
     fetch('/data/petscan_main.json')
       .then(res => res.json())
       .then((data: any[]) => {
-        const allImages = data
-          .map(p => (typeof p.images === 'string' ? p.images.split(',')[0].trim() : ''))
-          .filter(img => img && img.startsWith('http'));
-        const n = isMobile ? 5 : 7;
-        setProductImages(getExactlyNProductImagesNoDuplicates(allImages, n));
         setProductCount(data.length);
-        // Unisci brand e title per suggerimenti
-        setProductSuggestions(
-          data
-            .filter(p => p.title && p.brand)
-            .map(p => ({
-              label: `${p.brand} - ${p.title}`,
-              value: `${p.brand} - ${p.title}`
-            }))
-        );
+        
+        // Genera suggerimenti migliorati dal database
+        const suggestions = data
+          .filter(p => p.title && p.brand && p.Ean)
+          .map(p => {
+            // Crea suggerimenti multipli per ogni prodotto
+            const suggestions = [];
+            
+            // Suggerimento con brand e titolo
+            if (p.brand && p.title) {
+              suggestions.push({
+                label: `${p.brand} - ${p.title}`,
+                value: `${p.brand} - ${p.title}`,
+                type: 'brand-title' as const,
+                ean: p.Ean,
+                brand: p.brand,
+                title: p.title
+              });
+            }
+            
+            // Suggerimento solo con titolo
+            if (p.title) {
+              suggestions.push({
+                label: p.title,
+                value: p.title,
+                type: 'title' as const,
+                ean: p.Ean,
+                brand: p.brand,
+                title: p.title
+              });
+            }
+            
+            // Suggerimento solo con brand
+            if (p.brand) {
+              suggestions.push({
+                label: p.brand,
+                value: p.brand,
+                type: 'brand' as const,
+                ean: p.Ean,
+                brand: p.brand,
+                title: p.title
+              });
+            }
+            
+            // Suggerimento con EAN
+            if (p.Ean) {
+              suggestions.push({
+                label: `EAN: ${p.Ean}`,
+                value: p.Ean.toString(),
+                type: 'ean' as const,
+                ean: p.Ean,
+                brand: p.brand,
+                title: p.title
+              });
+            }
+            
+            return suggestions;
+          })
+          .flat()
+          .filter((sugg, index, arr) => 
+            // Rimuovi duplicati basati su value
+            arr.findIndex(s => s.value === sugg.value) === index
+          );
+        
+        setProductSuggestions(suggestions);
+      })
+      .catch(error => {
+        console.error('Errore nel caricamento del database:', error);
+        
+        // Fallback con dati di esempio per test
+        const sampleData = [
+          {
+            brand: "ALMO NATURE",
+            title: "almo nature Urinary Help Adult & Mature Cat 3 con Pesce, 3 con Pollo 6 x 70 g",
+            Ean: 8001154127065
+          },
+          {
+            brand: "ULTIMA",
+            title: "ultima Cat Sterilizzati Palline di Pelo Tacchino 440 g",
+            Ean: 8059149430072
+          },
+          {
+            brand: "GOURMET",
+            title: "PURINA GOURMET Mon Petit Filettini Intense cotti in Salsa",
+            Ean: 7613034453846
+          }
+        ];
+        
+        const suggestions = sampleData.map(p => [
+          {
+            label: `${p.brand} - ${p.title}`,
+            value: `${p.brand} - ${p.title}`,
+            type: 'brand-title' as const,
+            ean: p.Ean,
+            brand: p.brand,
+            title: p.title
+          },
+          {
+            label: p.brand,
+            value: p.brand,
+            type: 'brand' as const,
+            ean: p.Ean,
+            brand: p.brand,
+            title: p.title
+          },
+          {
+            label: p.title,
+            value: p.title,
+            type: 'title' as const,
+            ean: p.Ean,
+            brand: p.brand,
+            title: p.title
+          }
+        ]).flat();
+        
+        setProductSuggestions(suggestions);
+        setProductCount(sampleData.length);
       });
-  }, [isMobile]);
+  }, []);
 
   // Chiudi suggerimenti se clicchi fuori
   useEffect(() => {
@@ -169,10 +485,47 @@ const HeroSection = () => {
   }, []);
 
   const filteredSuggestions = search.length > 0
-    ? productSuggestions.filter(sugg => sugg.label.toLowerCase().includes(search.toLowerCase())).slice(0, 8)
+    ? productSuggestions
+        .filter(sugg => {
+          const searchLower = search.toLowerCase();
+          const labelLower = sugg.label.toLowerCase();
+          const valueLower = sugg.value.toLowerCase();
+          
+          // Ricerca più intelligente
+          const matches = (
+            labelLower.includes(searchLower) ||
+            valueLower.includes(searchLower) ||
+            sugg.brand.toLowerCase().includes(searchLower) ||
+            sugg.title.toLowerCase().includes(searchLower) ||
+            sugg.ean.toString().includes(searchLower)
+          );
+          
+          return matches;
+        })
+        .sort((a, b) => {
+          // Priorità: EAN esatto > brand-title > title > brand
+          const searchLower = search.toLowerCase();
+          
+          // EAN esatto ha priorità massima
+          if (a.type === 'ean' && a.value === search) return -1;
+          if (b.type === 'ean' && b.value === search) return 1;
+          
+          // Poi brand-title
+          if (a.type === 'brand-title' && b.type !== 'brand-title') return -1;
+          if (b.type === 'brand-title' && a.type !== 'brand-title') return 1;
+          
+          // Poi title
+          if (a.type === 'title' && b.type !== 'title' && b.type !== 'brand-title') return -1;
+          if (b.type === 'title' && a.type !== 'title' && a.type !== 'brand-title') return 1;
+          
+          // Infine brand
+          return 0;
+        })
+        .slice(0, 10) // Aumento a 10 risultati
     : [];
 
-  const pawLayout = getPawLayout(isMobile);
+  // Genera traiettoria delle zampette
+  const pawTrajectory = generateVerticalPawTrajectory(isMobile);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,39 +543,217 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-2 md:px-4 py-4 md:py-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden">
-      {/* Avatar circles */}
-      <div className="absolute left-0 top-0 w-full h-40 md:h-64 pointer-events-none select-none">
-        {pawLayout.map((layout, i) => (
-          <img
-            key={i}
-            src={productImages[i] || ''}
-            alt="avatar prodotto"
-            className={`absolute rounded-full border-4 border-white shadow-lg object-cover bg-white/70 ${layout.size} ${layout.z} ${floatingAnimations[i]}`}
-            style={{
-              left: layout.x,
-              top: layout.y,
-              transform: 'translate(-50%, 0)',
-            }}
+    <section className="relative min-h-screen flex items-center justify-center px-2 md:px-4 py-2 md:py-16 pb-0 md:pb-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden">
+      {/* Logo PetScan - visibile solo su mobile */}
+      <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`}>
+        <img 
+          src="/logo_no_cont.png" 
+          alt="PetScan Logo" 
+          className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200`}
+        />
+      </div>
+
+      {/* Animazione zampette - visibile solo su mobile */}
+      <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
+        {pawTrajectory.map((paw, index) => (
+          <AnimatedPawPrint
+            key={index}
+            position={paw.position}
+            delay={paw.delay}
+            color={paw.color}
+            isVisible={isPawAnimationActive && index < pawAnimationStep}
+            side={paw.side}
           />
         ))}
       </div>
 
-      <div className="container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-center pt-20 md:pt-36 pb-2 md:pb-4 md:items-center md:justify-center md:text-center gap-2 md:gap-8">
+      {/* Zampette decorative pulsanti - visibili solo su mobile/tablet */}
+      <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
+        <style>{pawAnimations}</style>
+        {generateDecorativePawPositions().map((paw, index) => (
+          <DecorativePawPrint
+            key={`decorative-${index}`}
+            position={{ x: paw.x, y: paw.y }}
+            color={paw.color}
+            size={paw.size}
+            delay={paw.delay}
+          />
+        ))}
+      </div>
+
+      <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-center ${showScanner || analysisResult || showSuggestions ? 'pt-28' : 'pt-4'} md:pt-36 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-3' : 'gap-6'} md:gap-8 min-h-screen md:min-h-0`}>
         {/* Hero Content (testo invariato) */}
+        <div className={`${showScanner || analysisResult ? 'mt-8' : ''}`}>
         <HeroContent 
           onAnalyzeClick={handleAnalyzeClick}
           onExamplesClick={() => {}}
+          isAnalysisActive={analysisResult !== null}
         />
+        </div>
+        
+        {/* Barra di ricerca - visibile solo su mobile */}
+        <div id="scannerizza-form" className="w-full md:hidden relative">
+          <form
+            onSubmit={handleSubmit}
+            className={`w-full max-w-xl mx-auto flex flex-row items-center gap-0 shadow-lg border-2 border-transparent relative overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-3 px-2 backdrop-blur-md min-h-[60px]'}
+              !transition-all !duration-200`}
+            style={{
+              WebkitAppearance: 'none',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              boxSizing: 'border-box',
+              willChange: 'transform',
+              zIndex: 10,
+              background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #e8baff, #ffb3f7, #ffb3ba) border-box',
+              backgroundSize: '110% 110%',
+              animation: 'rainbow-border 800s ease-in-out infinite',
+            }}
+          >
+            {/* Scanner icon sinistra */}
+            {!showScanner && (
+              <button
+                type="button"
+                className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                onClick={() => setShowScanner(true)}
+                aria-label="Scansiona barcode"
+                tabIndex={0}
+                style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+              >
+                <ScanLine className="w-7 h-7" style={{ display: 'block' }} />
+              </button>
+            )}
+            {/* Inline BarcodeScanner o input normale */}
+            <div className="flex-1 flex items-center justify-center min-w-0">
+              {showScanner ? (
+                <div className="w-full flex items-center justify-center">
+                  <BarcodeScanner
+                    onScan={handleScan}
+                    onManualEntry={handleScan}
+                    isLoading={analysisLoading}
+                  />
+                  <button
+                    type="button"
+                    className="ml-2 text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
+                    onClick={() => setShowScanner(false)}
+                    aria-label="Chiudi scanner"
+                    tabIndex={0}
+                    style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  inputMode="text"
+                  className="flex-1 bg-transparent outline-none px-3 py-2 text-base rounded-full placeholder-gray-400 min-w-0"
+                  placeholder="Inserisci barcode o nome prodotto"
+                  value={search}
+                  onChange={e => {
+                    setSearch(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  disabled={analysisLoading}
+                  autoComplete="off"
+                  style={{
+                    WebkitAppearance: 'none',
+                    fontSize: '1.1rem',
+                    lineHeight: 1.2,
+                    border: 'none',
+                    outline: 'none',
+                    boxShadow: 'none',
+                    background: 'transparent',
+                    width: '100%',
+                    minWidth: 0,
+                    padding: '0.7em 0.5em',
+                    borderRadius: '9999px',
+                    MozOsxFontSmoothing: 'grayscale',
+                    WebkitFontSmoothing: 'antialiased',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                  }}
+                  onFocus={e => {
+                    // Previene zoom su iOS
+                    e.target.style.fontSize = '16px';
+                  }}
+                  onBlur={e => {
+                    e.target.style.fontSize = '1.1rem';
+                  }}
+                />
+              )}
+            </div>
+            {/* Search icon destra */}
+            {!showScanner && (
+              <button
+                type="submit"
+                className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                disabled={analysisLoading || !search.trim()}
+                aria-label="Cerca"
+                tabIndex={0}
+                style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+              >
+                <Search className="w-7 h-7" style={{ display: 'block' }} />
+              </button>
+            )}
+            
+          </form>
+          
+          {/* Autocomplete suggestions */}
+          {showSuggestions && filteredSuggestions.length > 0 && !showScanner && (
+            <div 
+              ref={suggestionsRef}
+              className="w-full max-w-xl mx-auto bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64"
+            >
+              {filteredSuggestions.map((suggestion, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 transition-colors flex flex-col"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Per l'analisi usa sempre l'EAN
+                    const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
+                    setSearch(suggestion.value);
+                    handleProductAnalysis(searchValue); // Chiamo l'analisi prima
+                    setShowSuggestions(false); // Poi nascondo i suggerimenti
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Per l'analisi usa sempre l'EAN
+                    const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
+                    setSearch(suggestion.value);
+                    handleProductAnalysis(searchValue); // Chiamo l'analisi prima
+                    setShowSuggestions(false); // Poi nascondo i suggerimenti
+                  }}
+                  tabIndex={0}
+                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                >
+                  <div className="font-medium text-gray-900">
+                    {suggestion.type === 'ean' ? `EAN: ${suggestion.value}` : suggestion.label}
+                  </div>
+                  {suggestion.type !== 'ean' && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      {suggestion.brand} • EAN: {suggestion.ean}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+          
+        </div>
+
         {/* Statistiche centrate */}
-        <div className="w-full flex justify-center mt-4 mb-2 md:mt-8">
+        <div className="w-full flex justify-center md:mt-8">
           <HeroStats />
         </div>
 
-        {/* Barra di ricerca */}
+        {/* Barra di ricerca desktop - visibile solo su desktop */}
         <form
           onSubmit={handleSubmit}
-          className={`w-full max-w-lg mx-auto flex flex-row items-center gap-0 mt-0 md:mt-8 mb-2 md:mb-8 shadow-lg border border-white/40 relative overflow-hidden ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-3 md:py-5 px-2 md:px-6 backdrop-blur-md min-h-[60px] md:min-h-[64px]'}
+          className={`hidden md:flex w-full max-w-lg mx-auto flex-row items-center gap-0 mt-8 mb-8 shadow-lg border border-white/40 relative overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-5 px-6 backdrop-blur-md min-h-[64px]'}
             !transition-all !duration-200`}
           style={{
             WebkitAppearance: 'none',
@@ -237,13 +768,13 @@ const HeroSection = () => {
           {!showScanner && (
             <button
               type="button"
-              className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 md:w-14 md:h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 md:mr-3 focus:outline-none focus:ring-2 focus:ring-green-400"
+              className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-3 focus:outline-none focus:ring-2 focus:ring-green-400"
               onClick={() => setShowScanner(true)}
               aria-label="Scansiona barcode"
               tabIndex={0}
               style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
             >
-              <ScanLine className="w-7 h-7 md:w-8 md:h-8" style={{ display: 'block' }} />
+              <ScanLine className="w-8 h-8" style={{ display: 'block' }} />
             </button>
           )}
           {/* Inline BarcodeScanner o input normale */}
@@ -270,7 +801,7 @@ const HeroSection = () => {
               <input
                 type="text"
                 inputMode="text"
-                className="flex-1 bg-transparent outline-none px-3 md:px-4 py-2 text-base md:text-2xl rounded-full placeholder-gray-400 min-w-0"
+                className="flex-1 bg-transparent outline-none px-4 py-2 text-2xl rounded-full placeholder-gray-400 min-w-0"
                 placeholder="Inserisci barcode o nome prodotto"
                 value={search}
                 onChange={e => {
@@ -310,32 +841,44 @@ const HeroSection = () => {
           {!showScanner && (
             <button
               type="submit"
-              className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-12 h-12 md:w-14 md:h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-2 md:ml-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
               disabled={analysisLoading || !search.trim()}
               aria-label="Cerca"
               tabIndex={0}
               style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
             >
-              <Search className="w-7 h-7 md:w-8 md:h-8" style={{ display: 'block' }} />
+              <Search className="w-8 h-8" style={{ display: 'block' }} />
             </button>
           )}
           {/* Autocomplete suggestions */}
           {showSuggestions && filteredSuggestions.length > 0 && !showScanner && (
-            <div ref={suggestionsRef} className="absolute left-0 top-full w-full max-w-lg bg-white border border-gray-200 rounded-b-2xl shadow-lg z-30 mt-1 overflow-auto max-h-64">
+            <div 
+              ref={suggestionsRef} 
+              className="absolute left-0 top-full w-full max-w-lg bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64"
+            >
               {filteredSuggestions.map((suggestion, idx) => (
                 <button
                   key={idx}
                   type="button"
-                  className="w-full text-left px-4 py-2 hover:bg-green-50 text-gray-800 text-base border-b border-gray-100 last:border-b-0 transition-colors"
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 transition-colors flex flex-col"
                   onClick={() => {
+                    // Per l'analisi usa sempre l'EAN
+                    const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
                     setSearch(suggestion.value);
-                    setShowSuggestions(false);
-                    handleProductAnalysis(suggestion.value);
+                    handleProductAnalysis(searchValue); // Chiamo l'analisi prima
+                    setShowSuggestions(false); // Poi nascondo i suggerimenti
                   }}
                   tabIndex={0}
                   style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
                 >
-                  {suggestion.label}
+                  <div className="font-medium text-gray-900">
+                    {suggestion.type === 'ean' ? `EAN: ${suggestion.value}` : suggestion.label}
+                  </div>
+                  {suggestion.type !== 'ean' && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      {suggestion.brand} • EAN: {suggestion.ean}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
