@@ -7,7 +7,6 @@ import AnalysisForm from '@/components/AnalysisForm';
 import ProSection from '@/components/ProSection';
 import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
-import EndPageCTAPopup from '@/components/EndPageCTAPopup';
 import ScrollToTop from '@/components/ScrollToTop';
 
 const Index = () => {
@@ -21,7 +20,6 @@ const Index = () => {
       <ProSection />
       <FAQ />
       <Footer />
-      <EndPageCTAPopup />
       <ScrollToTop />
     </div>
   );

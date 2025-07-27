@@ -242,13 +242,36 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading }: BarcodeScannerProp
           <div className="relative w-full max-w-full box-border">
             <video
               ref={videoRef}
-              className={`w-full h-24 md:h-32 bg-black rounded-xl object-cover ${isScanning ? 'block' : 'hidden'}`}
+              className={`w-full h-64 md:h-96 bg-black rounded-xl object-cover ${isScanning ? 'block' : 'hidden'}`}
               playsInline
               muted
               autoPlay
             />
             {isScanning && (
               <>
+                {/* Overlay stile fotocamera con corner bianchi e icone */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                  {/* Corners */}
+                  <div className="absolute top-0 left-0 w-full h-full">
+                    {/* Top Left */}
+                    <div className="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl" style={{borderRadius:'16px'}} />
+                    {/* Top Right */}
+                    <div className="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl" style={{borderRadius:'16px'}} />
+                    {/* Bottom Left */}
+                    <div className="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl" style={{borderRadius:'16px'}} />
+                    {/* Bottom Right */}
+                    <div className="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl" style={{borderRadius:'16px'}} />
+                  </div>
+                  {/* Icona lente centrale */}
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <Search className="w-14 h-14 text-white opacity-90" strokeWidth={2.5} />
+                  </div>
+                  {/* Icona flash in basso a destra */}
+                  <div className="absolute bottom-6 right-6">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-flash w-8 h-8 opacity-90"><polygon points="7 2 17 2 11 12 17 12 7 22 13 12 7 12 13 2 7 2"></polygon></svg>
+                  </div>
+                </div>
+                {/* Overlay verde esistente (può essere mantenuto o rimosso) */}
                 <div className="absolute inset-0 border-2 rounded-xl pointer-events-none" style={{ borderColor: '#1FC77C' }}>
                   <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                     <div className="w-20 h-14 md:w-32 md:h-20 border-2 rounded-xl flex items-center justify-center" style={{ borderColor: '#1FC77C' }}>
@@ -260,11 +283,11 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading }: BarcodeScannerProp
                   onClick={stopScanning}
                   variant="destructive"
                   size="sm"
-                  className="absolute top-2 right-2 z-10 rounded-full"
+                  className="absolute top-2 right-2 z-30 rounded-full"
                 >
                   <X className="w-4 h-4" />
                 </Button>
-                <div className="absolute bottom-1 left-2 right-2 text-center">
+                <div className="absolute bottom-1 left-2 right-2 text-center z-30">
                   <p className="text-xs text-white bg-black/50 rounded px-2 py-1">
                     {isMobile ? 'Inquadra il barcode e mantieni fermo il dispositivo' : 'Inquadra il barcode nel riquadro'}
                   </p>

@@ -222,22 +222,32 @@ const HeroSection = () => {
         {/* Barra di ricerca */}
         <form
           onSubmit={handleSubmit}
-          className={`w-full max-w-lg mx-auto flex flex-row items-center gap-0 mt-0 md:mt-8 mb-2 md:mb-8 shadow-lg border border-white/40 relative overflow-hidden ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-4 md:py-5 px-2 md:px-6 backdrop-blur-md min-h-[64px]'}`}
+          className={`w-full max-w-lg mx-auto flex flex-row items-center gap-0 mt-0 md:mt-8 mb-2 md:mb-8 shadow-lg border border-white/40 relative overflow-hidden ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-3 md:py-5 px-2 md:px-6 backdrop-blur-md min-h-[60px] md:min-h-[64px]'}
+            !transition-all !duration-200`}
+          style={{
+            WebkitAppearance: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            boxSizing: 'border-box',
+            willChange: 'transform',
+            zIndex: 10,
+          }}
         >
           {/* Scanner icon sinistra */}
           {!showScanner && (
             <button
               type="button"
-              className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 md:w-14 md:h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 md:mr-3"
+              className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 md:w-14 md:h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 md:mr-3 focus:outline-none focus:ring-2 focus:ring-green-400"
               onClick={() => setShowScanner(true)}
               aria-label="Scansiona barcode"
-              style={{ fontSize: 28 }}
+              tabIndex={0}
+              style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
             >
-              <ScanLine className="w-7 h-7 md:w-8 md:h-8" />
+              <ScanLine className="w-7 h-7 md:w-8 md:h-8" style={{ display: 'block' }} />
             </button>
           )}
           {/* Inline BarcodeScanner o input normale */}
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center min-w-0">
             {showScanner ? (
               <div className="w-full flex items-center justify-center">
                 <BarcodeScanner
@@ -247,9 +257,11 @@ const HeroSection = () => {
                 />
                 <button
                   type="button"
-                  className="ml-2 text-gray-400 hover:text-red-500 text-2xl font-bold"
+                  className="ml-2 text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
                   onClick={() => setShowScanner(false)}
                   aria-label="Chiudi scanner"
+                  tabIndex={0}
+                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
                 >
                   ×
                 </button>
@@ -257,7 +269,8 @@ const HeroSection = () => {
             ) : (
               <input
                 type="text"
-                className="flex-1 bg-transparent outline-none px-3 md:px-4 py-2 text-xl md:text-2xl rounded-full placeholder-gray-400"
+                inputMode="text"
+                className="flex-1 bg-transparent outline-none px-3 md:px-4 py-2 text-base md:text-2xl rounded-full placeholder-gray-400 min-w-0"
                 placeholder="Inserisci barcode o nome prodotto"
                 value={search}
                 onChange={e => {
@@ -266,6 +279,30 @@ const HeroSection = () => {
                 }}
                 disabled={analysisLoading}
                 autoComplete="off"
+                style={{
+                  WebkitAppearance: 'none',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.2,
+                  border: 'none',
+                  outline: 'none',
+                  boxShadow: 'none',
+                  background: 'transparent',
+                  width: '100%',
+                  minWidth: 0,
+                  padding: '0.7em 0.5em',
+                  borderRadius: '9999px',
+                  MozOsxFontSmoothing: 'grayscale',
+                  WebkitFontSmoothing: 'antialiased',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                }}
+                onFocus={e => {
+                  // Previene zoom su iOS
+                  e.target.style.fontSize = '16px';
+                }}
+                onBlur={e => {
+                  e.target.style.fontSize = '1.1rem';
+                }}
               />
             )}
           </div>
@@ -273,12 +310,13 @@ const HeroSection = () => {
           {!showScanner && (
             <button
               type="submit"
-              className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-12 h-12 md:w-14 md:h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-2 md:ml-3"
+              className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-12 h-12 md:w-14 md:h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-2 md:ml-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
               disabled={analysisLoading || !search.trim()}
               aria-label="Cerca"
-              style={{ fontSize: 28 }}
+              tabIndex={0}
+              style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
             >
-              <Search className="w-7 h-7 md:w-8 md:h-8" />
+              <Search className="w-7 h-7 md:w-8 md:h-8" style={{ display: 'block' }} />
             </button>
           )}
           {/* Autocomplete suggestions */}
@@ -294,6 +332,8 @@ const HeroSection = () => {
                     setShowSuggestions(false);
                     handleProductAnalysis(suggestion.value);
                   }}
+                  tabIndex={0}
+                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
                 >
                   {suggestion.label}
                 </button>

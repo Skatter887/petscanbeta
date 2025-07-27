@@ -52,7 +52,7 @@ const Header = () => {
             >
               <div className="flex items-center space-x-3 relative">
                 {/* Logo Container - Full size without padding */}
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-50 to-orange-50 shadow-sm group-hover:shadow-md transition-all duration-300 overflow-hidden flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-50 to-orange-50 shadow-sm group-hover:shadow-md transition-all duration-300 overflow-hidden flex items-center justify-center">
                   <PetScanLogo size="md" />
                 </div>
 
