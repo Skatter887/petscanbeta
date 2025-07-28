@@ -9,7 +9,7 @@ import ScrollToTop from '@/components/ScrollToTop';
 
 const Index = () => {
   return (
-    <div className="min-h-screen pb-20 md:pb-0">
+    <div className="min-h-screen pb-16 md:pb-0">
       <Header />
       <HeroSection />
       <HowItWorks />

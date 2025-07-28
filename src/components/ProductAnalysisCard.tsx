@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Zap, Droplets, Leaf } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, XCircle, Zap, Droplets, Leaf, Search } from 'lucide-react';
 
 interface NutritionalValue {
   label: string;
@@ -23,9 +24,10 @@ interface ProductAnalysisResult {
 
 interface ProductAnalysisCardProps {
   result: ProductAnalysisResult;
+  onResetSearch?: () => void;
 }
 
-const ProductAnalysisCard = ({ result }: ProductAnalysisCardProps) => {
+const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'excellent': return 'bg-primary'; // Azzurro del brand per eccellente
@@ -90,35 +92,40 @@ const ProductAnalysisCard = ({ result }: ProductAnalysisCardProps) => {
 
   // Colore del progress bar in base al punteggio
   const getProgressColor = (score: number) => {
-    if (score >= 65) return '#22c55e'; // Verde per approvato
-    if (score >= 40) return '#f97316'; // Arancione per mediocre
+    if (result.evaluationStatus === 'not-approved') return '#ef4444'; // Rosso per non approvato
+    if (result.evaluationStatus === 'approved') return '#22c55e'; // Verde per approvato
+    if (result.evaluationStatus === 'could-be-better') return '#f97316'; // Arancione per passabile
     return '#ef4444'; // Rosso per non approvato
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 65) return '#22c55e'; // Verde per approvato
-    if (score >= 40) return '#f97316'; // Arancione per mediocre
+    if (result.evaluationStatus === 'not-approved') return '#ef4444'; // Rosso per non approvato
+    if (result.evaluationStatus === 'approved') return '#22c55e'; // Verde per approvato
+    if (result.evaluationStatus === 'could-be-better') return '#f97316'; // Arancione per passabile
     return '#ef4444'; // Rosso per non approvato
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto animate-fade-in">
-      <CardHeader className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-2">
+    <div className="w-full">
+      <Card className="w-full max-w-none mx-auto animate-fade-in" style={{ padding: 0, margin: '0 auto' }}>
+      <CardHeader className="text-center space-y-4 px-0" style={{ padding: '1.5rem 1rem' }}>
+        <div className="flex items-center justify-center space-x-3">
           {result.imageUrl && (
             <img 
               src={result.imageUrl} 
               alt={result.productName}
-              className="w-16 h-16 rounded-full object-cover"
+              className="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-gray-100"
             />
           )}
-          <div>
-            <CardTitle className="text-xl font-bold text-foreground">
+          <div className="text-center">
+            <CardTitle className="text-xl font-bold text-gray-900 leading-tight mb-2">
               {result.productName}
             </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {result.brand} • {result.category}
-            </p>
+            <div className="mb-2">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border border-green-200">
+                {result.brand}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -169,7 +176,7 @@ const ProductAnalysisCard = ({ result }: ProductAnalysisCardProps) => {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 px-0" style={{ padding: '0 1rem 1rem 1rem' }}>
         {/* Nutritional Analysis */}
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
@@ -255,6 +262,36 @@ const ProductAnalysisCard = ({ result }: ProductAnalysisCardProps) => {
         )}
       </CardContent>
     </Card>
+
+    {/* Button for another analysis */}
+    <div className="mt-4 px-4 pb-0 flex justify-center items-center">
+      <Button 
+        onClick={() => {
+          // Reset the search field using the provided function
+          if (onResetSearch) {
+            onResetSearch();
+          }
+          // Scroll to the search bar
+          const searchBar = document.getElementById('scannerizza-form');
+          if (searchBar) {
+            searchBar.scrollIntoView({ behavior: 'smooth' });
+            // Focus on the search input
+            const searchInput = searchBar.querySelector('input');
+            if (searchInput) {
+              searchInput.focus();
+            }
+          }
+        }}
+        className="w-full max-w-md bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 text-white font-bold py-6 px-6 rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-white/20"
+      >
+        <div className="flex items-center justify-center space-x-3">
+          <span className="text-lg">🔍</span>
+          <span className="text-lg">Effettua un'altra analisi</span>
+          <span className="text-xl">🐾</span>
+        </div>
+      </Button>
+    </div>
+    </div>
   );
 };
 

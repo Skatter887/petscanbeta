@@ -9,7 +9,7 @@ interface HeroContentProps {
 
 const HeroContent: React.FC<HeroContentProps> = ({ onAnalyzeClick, onExamplesClick, isAnalysisActive = false }) => {
   return (
-    <div className="flex flex-col gap-2 md:gap-4 items-center text-center w-full">
+    <div className="flex flex-col gap-1 md:gap-4 items-center text-center w-full hero-content-webapp">
       <h1 className={`${isAnalysisActive ? 'text-2xl md:text-4xl' : 'text-4xl md:text-6xl'} font-black text-gray-900 leading-tight px-4`}>
         Il cibo che dai è davvero <span className="text-[#22c55e] drop-shadow-sm">sano</span>?
       </h1>

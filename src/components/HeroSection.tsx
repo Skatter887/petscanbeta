@@ -35,6 +35,19 @@ const pawAnimations = `
       background-position: 0% 50%;
     }
   }
+
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .animate-spin-slow {
+    animation: spin-slow 2s linear infinite;
+  }
 `;
 
 const CATEGORIES = [
@@ -364,7 +377,7 @@ const HeroSection = () => {
             // Suggerimento con brand e titolo
             if (p.brand && p.title) {
               suggestions.push({
-                label: `${p.brand} - ${p.title}`,
+              label: `${p.brand} - ${p.title}`,
                 value: `${p.brand} - ${p.title}`,
                 type: 'brand-title' as const,
                 ean: p.Ean,
@@ -529,27 +542,59 @@ const HeroSection = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    // Scroll al centro della pagina per il loading
+    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
     handleProductAnalysis(search);
   };
 
   const handleAnalyzeClick = () => {
+    setIsLoading(true);
+    // Scroll al centro della pagina per il loading
+    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
     handleProductAnalysis(search);
   };
 
   const handleScan = (barcode: string) => {
     setShowScanner(false);
     setSearch(barcode);
+    setIsLoading(true);
+    // Scroll al centro della pagina per il loading
+    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
     handleProductAnalysis(barcode);
   };
 
+  // Funzione per resettare il campo di ricerca
+  const resetSearchField = () => {
+    setSearch('');
+    setShowSuggestions(false);
+  };
+
+  // Reset loading quando l'analisi è completata
+  useEffect(() => {
+    if (analysisResult) {
+      // Aggiungi un delay più lungo per mostrare meglio l'animazione
+      setTimeout(() => {
+        setIsLoading(false);
+        // Scroll alla scheda analisi per centrarla
+        setTimeout(() => {
+          const analysisCard = document.querySelector('[data-analysis-card]');
+          if (analysisCard) {
+            analysisCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 200);
+      }, 1500); // Aumentato da 100ms a 1500ms
+    }
+  }, [analysisResult]);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-2 md:px-4 py-2 md:py-16 pb-0 md:pb-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden">
-      {/* Logo PetScan - visibile solo su mobile */}
-      <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`}>
+    <section className="relative min-h-screen flex flex-col justify-between items-center px-2 md:px-4 py-0 md:py-16 pb-0 md:pb-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden hero-section-container" style={{ paddingBottom: analysisResult ? '3rem' : '2rem' }}>
+      {/* Logo PetScan - visibile solo su mobile con safe area support */}
+      <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.25rem + env(safe-area-inset-top))' : 'calc(1rem + env(safe-area-inset-top))' }}>
         <img 
           src="/logo_no_cont.png" 
           alt="PetScan Logo" 
-          className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200`}
+          className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200 logo-webapp-lower`}
         />
       </div>
 
@@ -581,7 +626,7 @@ const HeroSection = () => {
         ))}
       </div>
 
-      <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-center ${showScanner || analysisResult || showSuggestions ? 'pt-28' : 'pt-4'} md:pt-36 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-3' : 'gap-6'} md:gap-8 min-h-screen md:min-h-0`}>
+      <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-center flex-1 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-2' : 'gap-4'} md:gap-8 hero-content-wrapper`} style={{ paddingBottom: analysisResult ? '2rem' : '1rem', paddingLeft: analysisResult ? '0.5rem' : '1rem', paddingRight: analysisResult ? '0.5rem' : '1rem' }}>
         {/* Hero Content (testo invariato) */}
         <div className={`${showScanner || analysisResult ? 'mt-8' : ''}`}>
         <HeroContent 
@@ -715,6 +760,9 @@ const HeroSection = () => {
                     // Per l'analisi usa sempre l'EAN
                     const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
                     setSearch(suggestion.value);
+                    setIsLoading(true);
+                    // Scroll al centro della pagina per il loading
+                    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
                     handleProductAnalysis(searchValue); // Chiamo l'analisi prima
                     setShowSuggestions(false); // Poi nascondo i suggerimenti
                   }}
@@ -724,6 +772,9 @@ const HeroSection = () => {
                     // Per l'analisi usa sempre l'EAN
                     const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
                     setSearch(suggestion.value);
+                    setIsLoading(true);
+                    // Scroll al centro della pagina per il loading
+                    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
                     handleProductAnalysis(searchValue); // Chiamo l'analisi prima
                     setShowSuggestions(false); // Poi nascondo i suggerimenti
                   }}
@@ -865,6 +916,9 @@ const HeroSection = () => {
                     // Per l'analisi usa sempre l'EAN
                     const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
                     setSearch(suggestion.value);
+                    setIsLoading(true);
+                    // Scroll al centro della pagina per il loading
+                    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
                     handleProductAnalysis(searchValue); // Chiamo l'analisi prima
                     setShowSuggestions(false); // Poi nascondo i suggerimenti
                   }}
@@ -885,10 +939,35 @@ const HeroSection = () => {
           )}
         </form>
 
+        {/* Loading Component */}
+        {(isLoading || analysisLoading) && (
+          <div className="w-full flex flex-col items-center justify-center py-12">
+            <style>{pawAnimations}</style>
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-green-200 border-t-green-500 rounded-full animate-spin-slow"></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-2xl">🐾</span>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    Analizzando il prodotto...
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Stiamo valutando la qualità nutrizionale
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Risultato analisi */}
         {analysisResult && (
-          <div className="w-full mt-8">
-            <ProductEvaluationCard result={analysisResult} />
+          <div className="w-full mt-16" data-analysis-card>
+            <ProductEvaluationCard result={analysisResult} onResetSearch={resetSearchField} />
           </div>
         )}
         {/* Risultati ricerca multipli */}

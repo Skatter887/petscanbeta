@@ -10,20 +10,61 @@ const Header = () => {
   const navigate = useNavigate();
 
   const scrollToSection = (sectionId: string) => {
+    console.log('scrollToSection called with:', sectionId);
+    
+    // Check if we're on mobile (since scannerizza-form is md:hidden)
+    const isMobile = window.innerWidth < 768;
+    console.log('Is mobile:', isMobile);
+    
     // If we're not on the homepage, navigate there first
     if (window.location.pathname !== '/') {
+      console.log('Navigating to homepage first');
       navigate('/');
       // Wait for navigation to complete, then scroll
       setTimeout(() => {
         const element = document.getElementById(sectionId);
+        console.log('Element found after navigation:', element);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+          if (sectionId === 'scannerizza-form') {
+            if (isMobile) {
+              console.log('Scrolling to scannerizza-form on mobile');
+              // Center the search bar on the screen
+              element.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'center'
+              });
+            } else {
+              console.log('scannerizza-form is hidden on desktop');
+            }
+          } else {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        } else {
+          console.log('Element not found:', sectionId);
         }
       }, 100);
     } else {
       const element = document.getElementById(sectionId);
+      console.log('Element found on same page:', element);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        if (sectionId === 'scannerizza-form') {
+          if (isMobile) {
+            console.log('Scrolling to scannerizza-form on same page, mobile');
+            // Center the search bar on the screen
+            element.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'center'
+            });
+          } else {
+            console.log('scannerizza-form is hidden on desktop');
+          }
+        } else {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        console.log('Element not found on same page:', sectionId);
       }
     }
   };
@@ -121,66 +162,66 @@ const Header = () => {
       </header>
 
       {/* Mobile Bottom Navigation Bar - visibile solo su mobile */}
-      <nav className="md:hidden mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[9999] bg-white/50 backdrop-blur-md shadow-2xl" style={{ bottom: '60px' }}>
-        <div className="flex items-center justify-around px-4 py-2.5 max-w-md mx-auto" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+      <nav className="md:hidden mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[9999] bg-white/80 backdrop-blur-lg shadow-2xl border-t border-white/20">
+        <div className="flex items-center justify-around px-4 py-3 max-w-md mx-auto">
           {/* Guida */}
           <button
             onClick={() => scrollToSection('come-funziona')}
-            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            className="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="w-6 h-6 mb-1 flex items-center justify-center">
-              <Settings className="w-5 h-5" style={{ color: '#16a34a', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            <div className="w-4 h-4 mb-1 flex items-center justify-center">
+              <Settings className="w-4 h-4" style={{ color: '#16a34a', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
             </div>
-            <span className="text-xs font-bold" style={{ color: '#16a34a', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>Guida</span>
+            <span className="text-[10px] font-bold" style={{ color: '#16a34a', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Guida</span>
           </button>
 
           {/* Analisi */}
           <button
             onClick={() => scrollToSection('prodotti')}
-            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            className="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="w-6 h-6 mb-1 flex items-center justify-center">
-              <FileText className="w-5 h-5" style={{ color: '#ea580c', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            <div className="w-4 h-4 mb-1 flex items-center justify-center">
+              <FileText className="w-4 h-4" style={{ color: '#ea580c', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
             </div>
-            <span className="text-xs font-bold" style={{ color: '#ea580c', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>Analisi</span>
+            <span className="text-[10px] font-bold" style={{ color: '#ea580c', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Analisi</span>
           </button>
 
           {/* Scannerizza - Pulsante centrale semplificato */}
           <button
             onClick={() => scrollToSection('scannerizza-form')}
-            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            className="flex flex-col items-center justify-center w-14 h-13 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="w-10 h-10 mb-1 flex items-center justify-center">
-              <Search className="w-8 h-8" style={{ color: '#000000', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))', strokeWidth: '5' }} />
+            <div className="w-5 h-5 mb-1 flex items-center justify-center">
+              <Search className="w-4 h-4" style={{ color: '#000000', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))', strokeWidth: '3' }} />
             </div>
-            <span className="text-xs font-bold" style={{ color: '#000000', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>Scannerizza</span>
+            <span className="text-[10px] font-bold" style={{ color: '#000000', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Scannerizza</span>
           </button>
 
           {/* Chi Siamo */}
           <button
             onClick={navigateToAboutUs}
-            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            className="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="w-6 h-6 mb-1 flex items-center justify-center">
-              <Heart className="w-5 h-5" style={{ color: '#ea580c', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            <div className="w-4 h-4 mb-1 flex items-center justify-center">
+              <Heart className="w-4 h-4" style={{ color: '#ea580c', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
             </div>
-            <span className="text-xs font-bold" style={{ color: '#ea580c', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>Chi Siamo</span>
+            <span className="text-[10px] font-bold" style={{ color: '#ea580c', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Chi Siamo</span>
           </button>
 
           {/* FAQ */}
           <button
             onClick={() => scrollToSection('faq')}
-            className="flex flex-col items-center justify-center w-16 h-11 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/20"
+            className="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="w-6 h-6 mb-1 flex items-center justify-center">
-              <HelpCircle className="w-5 h-5" style={{ color: '#16a34a', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+            <div className="w-4 h-4 mb-1 flex items-center justify-center">
+              <HelpCircle className="w-4 h-4" style={{ color: '#16a34a', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
             </div>
-            <span className="text-xs font-bold" style={{ color: '#16a34a', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>FAQ</span>
+            <span className="text-[10px] font-bold" style={{ color: '#16a34a', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>FAQ</span>
           </button>
         </div>
       </nav>
