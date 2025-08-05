@@ -243,6 +243,7 @@ const InserisciProd = () => {
                 onManualEntry={handleProductAnalysis}
                 isLoading={isLoading}
                 resetTrigger={resetTrigger}
+                onScannerStateChange={() => {}} // Callback vuota per InserisciProd
               />
             </div>
           </div>

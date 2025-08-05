@@ -3,7 +3,7 @@ import HeroContent from './HeroContent';
 import HeroStats from './HeroStats';
 import ProductEvaluationCard from './ProductAnalysisCard';
 import { useState, useEffect, useRef } from 'react';
-import { Search, ScanLine, X } from 'lucide-react';
+import { Search, ScanLine, X, Camera } from 'lucide-react';
 import { useProductAnalysis } from '@/hooks/useProductAnalysis';
 import BarcodeScanner from './BarcodeScanner';
 import ProductNotFoundModal from './ProductNotFoundModal';
@@ -297,6 +297,7 @@ const HeroSection = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [productTitles, setProductTitles] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isScannerActive, setIsScannerActive] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const [productSuggestions, setProductSuggestions] = useState<{
     label: string;
@@ -611,6 +612,18 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex flex-col justify-between items-center px-2 md:px-4 py-0 md:py-16 pb-0 md:pb-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden hero-section-container" style={{ paddingBottom: analysisResult ? '3rem' : '2rem' }}>
+      {/* Overlay per oscurare il contenuto quando lo scanner è attivo su mobile */}
+      {isMobile && isScannerActive && (
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-40 flex items-center justify-center">
+          <div className="text-center text-white p-4">
+            <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+              <Camera className="w-8 h-8" />
+            </div>
+            <p className="text-lg font-semibold mb-2">Scanner Attivo</p>
+            <p className="text-sm opacity-90">Inquadra il codice a barre nel riquadro</p>
+          </div>
+        </div>
+      )}
       {/* Logo PetScan - visibile solo su mobile con safe area support */}
       <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.25rem + env(safe-area-inset-top))' : 'calc(1rem + env(safe-area-inset-top))' }}>
         <img 
@@ -693,11 +706,12 @@ const HeroSection = () => {
             <div className="flex-1 flex items-center justify-center min-w-0">
               {showScanner ? (
                 <div className="w-full flex items-center justify-center">
-                  <BarcodeScanner
-                    onScan={handleScan}
-                    onManualEntry={handleScan}
-                    isLoading={analysisLoading}
-                  />
+                                  <BarcodeScanner
+                  onScan={handleScan}
+                  onManualEntry={handleScan}
+                  isLoading={analysisLoading}
+                  onScannerStateChange={setIsScannerActive}
+                />
                   <button
                     type="button"
                     className="ml-2 text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
@@ -858,6 +872,7 @@ const HeroSection = () => {
                   onScan={handleScan}
                   onManualEntry={handleScan}
                   isLoading={analysisLoading}
+                  onScannerStateChange={setIsScannerActive}
                 />
                 <button
                   type="button"

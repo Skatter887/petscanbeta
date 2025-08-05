@@ -11,9 +11,10 @@ interface BarcodeScannerProps {
   onManualEntry: (input: string) => void;
   isLoading?: boolean;
   resetTrigger?: number; // Trigger per resettare il campo di input
+  onScannerStateChange?: (isActive: boolean) => void; // Callback per comunicare lo stato dello scanner
 }
 
-const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: BarcodeScannerProps) => {
+const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScannerStateChange }: BarcodeScannerProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const [manualInput, setManualInput] = useState('');
   const [inputMode, setInputMode] = useState<'scanner' | 'manual'>('scanner');
@@ -21,6 +22,7 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: Barc
   const [error, setError] = useState<string | null>(null);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
+  const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -28,6 +30,7 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: Barc
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
   const scanningRef = useRef<boolean>(false);
   const controlsRef = useRef<any>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Check browser compatibility
@@ -97,6 +100,11 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: Barc
     }
   }, [resetTrigger]);
 
+  // Notifica il cambio di stato dello scanner al componente padre
+  useEffect(() => {
+    onScannerStateChange?.(isScanning);
+  }, [isScanning, onScannerStateChange]);
+
   const checkCameraPermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -148,7 +156,15 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: Barc
     // Set scanning state first to make video element available
     setIsScanning(true);
     setError(null);
+    setShowTimeoutMessage(false);
     scanningRef.current = true;
+
+    // Set timeout message after 3 seconds
+    timeoutRef.current = setTimeout(() => {
+      if (scanningRef.current) {
+        setShowTimeoutMessage(true);
+      }
+    }, 3000);
 
     // Wait a short moment for the video element to be rendered
     setTimeout(async () => {
@@ -199,6 +215,13 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: Barc
   const stopScanning = () => {
     scanningRef.current = false;
     setIsScanning(false);
+    setShowTimeoutMessage(false);
+    
+    // Clear timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     
     if (controlsRef.current) {
       try {
@@ -257,36 +280,31 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: Barc
             />
             {isScanning && (
               <>
-                {/* Overlay stile fotocamera con corner bianchi e icone */}
+                {/* Overlay con frame rettangolare e bordo animato */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                  {/* Corners */}
-                  <div className="absolute top-0 left-0 w-full h-full">
-                    {/* Top Left */}
-                    <div className="absolute top-4 left-4 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl" style={{borderRadius:'16px'}} />
-                    {/* Top Right */}
-                    <div className="absolute top-4 right-4 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl" style={{borderRadius:'16px'}} />
-                    {/* Bottom Left */}
-                    <div className="absolute bottom-4 left-4 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl" style={{borderRadius:'16px'}} />
-                    {/* Bottom Right */}
-                    <div className="absolute bottom-4 right-4 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl" style={{borderRadius:'16px'}} />
+                  {/* Frame rettangolare con bordo animato */}
+                  <div className="relative w-48 h-32 md:w-64 md:h-40">
+                    {/* Bordo animato verde */}
+                    <div className="absolute inset-0 border-2 rounded-lg animate-pulse" 
+                         style={{ 
+                           borderColor: '#1FC77C',
+                           boxShadow: '0 0 20px rgba(31, 199, 124, 0.5)',
+                           animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                         }} />
+                    
+                    {/* Corner indicators */}
+                    <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-white rounded-tl" />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-white rounded-tr" />
+                    <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-white rounded-bl" />
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-white rounded-br" />
                   </div>
-                  {/* Icona lente centrale */}
-                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <Search className="w-14 h-14 text-white opacity-90" strokeWidth={2.5} />
-                  </div>
+                  
                   {/* Icona flash in basso a destra */}
                   <div className="absolute bottom-6 right-6">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-flash w-8 h-8 opacity-90"><polygon points="7 2 17 2 11 12 17 12 7 22 13 12 7 12 13 2 7 2"></polygon></svg>
                   </div>
                 </div>
-                {/* Overlay verde esistente (può essere mantenuto o rimosso) */}
-                <div className="absolute inset-0 border-2 rounded-xl pointer-events-none" style={{ borderColor: '#1FC77C' }}>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div className="w-20 h-14 md:w-32 md:h-20 border-2 rounded-xl flex items-center justify-center" style={{ borderColor: '#1FC77C' }}>
-                      <ScanLine className="w-7 h-7 animate-pulse" style={{ color: '#1FC77C' }} />
-                    </div>
-                  </div>
-                </div>
+                
                 <Button
                   onClick={stopScanning}
                   variant="destructive"
@@ -295,6 +313,16 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: Barc
                 >
                   <X className="w-4 h-4" />
                 </Button>
+                
+                {/* Messaggio di timeout */}
+                {showTimeoutMessage && (
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 bg-black/80 text-white px-4 py-2 rounded-lg text-center max-w-xs">
+                    <p className="text-sm">
+                      Avvicina meglio il codice a barre o verifica la luce
+                    </p>
+                  </div>
+                )}
+                
                 <div className="absolute bottom-1 left-2 right-2 text-center z-30">
                   <p className="text-xs text-white bg-black/50 rounded px-2 py-1">
                     {isMobile ? 'Inquadra il barcode e mantieni fermo il dispositivo' : 'Inquadra il barcode nel riquadro'}
