@@ -9,6 +9,8 @@ import PetScanLogo from '@/components/PetScanLogo';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Search, AlertCircle, Sparkles } from 'lucide-react';
+import ProductNotFoundModal from '@/components/ProductNotFoundModal';
+import AddProductModal from '@/components/AddProductModal';
 
 interface ProductAnalysisResult {
   productName: string;
@@ -31,8 +33,11 @@ const InserisciProd = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ProductAnalysisResult | null>(null);
   const [searchResults, setSearchResults] = useState<ProductData[]>([]);
-  const [noResults, setNoResults] = useState(false);
   const [productCount, setProductCount] = useState(0);
+  const [showProductNotFoundModal, setShowProductNotFoundModal] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [lastSearchedEan, setLastSearchedEan] = useState<string>('');
+  const [resetTrigger, setResetTrigger] = useState(0);
   const { toast } = useToast();
   const analysisCardRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +53,8 @@ const InserisciProd = () => {
     setIsLoading(true);
     setAnalysisResult(null);
     setSearchResults([]);
-    setNoResults(false);
+    setShowProductNotFoundModal(false);
+    setShowAddProductModal(false);
 
     try {
       // Simulate API delay
@@ -74,10 +80,10 @@ const InserisciProd = () => {
         setAnalysisResult(result);
         scrollToAnalysisCard();
         
-                  toast({
-            title: "Analisi completata",
-            description: `${product.title} analizzato con successo`,
-          });
+        toast({
+          title: "Analisi completata",
+          description: `${product.title} analizzato con successo`,
+        });
       } else {
         // Se non trovato per barcode, prova la ricerca per nome
         const searchResults = await searchProductByName(input);
@@ -91,22 +97,16 @@ const InserisciProd = () => {
             description: `${searchResults.length} prodotto${searchResults.length > 1 ? 'i' : ''} trovato${searchResults.length > 1 ? 'i' : ''} per "${input}"`,
           });
         } else {
-          // Nessun prodotto trovato
-          setNoResults(true);
-          
-          toast({
-            title: "Prodotto non trovato",
-            description: "Nessun prodotto corrispondente nel database",
-            variant: "destructive"
-          });
+          // Prodotto non trovato - mostra il modal
+          setLastSearchedEan(input);
+          setShowProductNotFoundModal(true);
         }
       }
     } catch (error) {
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante l'analisi",
-        variant: "destructive"
-      });
+      console.error('Error analyzing product:', error);
+      // In caso di errore, mostra comunque il modal
+      setLastSearchedEan(input);
+      setShowProductNotFoundModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -114,7 +114,6 @@ const InserisciProd = () => {
 
   const handleProductSelect = (ean: number) => {
     setSearchResults([]); // Pulisce i risultati di ricerca
-    setNoResults(false);
     handleProductAnalysis(ean.toString());
   };
 
@@ -128,6 +127,42 @@ const InserisciProd = () => {
         });
       }
     }, 100); // Piccolo delay per assicurarsi che il componente sia renderizzato
+  };
+
+  const handleNewSearch = () => {
+    // Reset completo dello stato
+    setIsLoading(false);
+    setAnalysisResult(null);
+    setSearchResults([]);
+    setShowProductNotFoundModal(false);
+    setShowAddProductModal(false);
+    setResetTrigger(prev => prev + 1); // Trigger per resettare il BarcodeScanner
+    
+    // Focus sulla barra di ricerca
+    const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.focus();
+    }
+  };
+
+  const handleAddProduct = () => {
+    setShowProductNotFoundModal(false);
+    setShowAddProductModal(true);
+  };
+
+  const handleCloseAddProductModal = () => {
+    // Reset completo dello stato
+    setIsLoading(false);
+    setAnalysisResult(null);
+    setSearchResults([]);
+    setShowAddProductModal(false);
+    setResetTrigger(prev => prev + 1); // Trigger per resettare il BarcodeScanner
+    
+    // Focus sulla barra di ricerca
+    const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.focus();
+    }
   };
 
   return (
@@ -207,6 +242,7 @@ const InserisciProd = () => {
                 onScan={handleProductAnalysis}
                 onManualEntry={handleProductAnalysis}
                 isLoading={isLoading}
+                resetTrigger={resetTrigger}
               />
             </div>
           </div>
@@ -301,16 +337,6 @@ const InserisciProd = () => {
             </div>
           )}
 
-          {/* No Results */}
-          {noResults && !isLoading && (
-            <Alert className="max-w-md mx-auto border-0 shadow-card">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Prodotto non trovato nel database. Prova a cercare con il nome del brand o una parola chiave diversa.
-              </AlertDescription>
-            </Alert>
-          )}
-
           {/* Info Section */}
           <div className="gradient-accent rounded-2xl p-8 max-w-2xl mx-auto shadow-card">
             <div className="flex items-center space-x-3 mb-4">
@@ -342,6 +368,20 @@ const InserisciProd = () => {
           </div>
         </div>
       </div>
+
+      {/* Modali per prodotto non trovato */}
+      <ProductNotFoundModal
+        isOpen={showProductNotFoundModal}
+        onClose={handleNewSearch}
+        onNewSearch={handleNewSearch}
+        onAddProduct={handleAddProduct}
+      />
+      
+      <AddProductModal
+        isOpen={showAddProductModal}
+        onClose={handleCloseAddProductModal}
+        eanCode={lastSearchedEan}
+      />
 
       <Footer />
     </div>

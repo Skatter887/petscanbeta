@@ -10,9 +10,10 @@ interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
   onManualEntry: (input: string) => void;
   isLoading?: boolean;
+  resetTrigger?: number; // Trigger per resettare il campo di input
 }
 
-const BarcodeScanner = ({ onScan, onManualEntry, isLoading }: BarcodeScannerProps) => {
+const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger }: BarcodeScannerProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const [manualInput, setManualInput] = useState('');
   const [inputMode, setInputMode] = useState<'scanner' | 'manual'>('scanner');
@@ -88,6 +89,13 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading }: BarcodeScannerProp
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputMode]);
+
+  // Reset del campo di input quando cambia il resetTrigger
+  useEffect(() => {
+    if (resetTrigger) {
+      setManualInput('');
+    }
+  }, [resetTrigger]);
 
   const checkCameraPermission = async () => {
     try {

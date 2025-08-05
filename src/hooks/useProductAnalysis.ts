@@ -22,13 +22,17 @@ export function useProductAnalysis() {
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ProductAnalysisResult | null>(null);
   const [searchResults, setSearchResults] = useState<ProductData[]>([]);
-  const [noResults, setNoResults] = useState(false);
+  const [showProductNotFoundModal, setShowProductNotFoundModal] = useState(false);
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [lastSearchedEan, setLastSearchedEan] = useState<string>('');
 
   const handleProductAnalysis = async (input: string) => {
     setIsLoading(true);
     setAnalysisResult(null);
     setSearchResults([]);
-    setNoResults(false);
+    setShowProductNotFoundModal(false);
+    setShowAddProductModal(false);
+    
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
       const { product, analysis } = await analyzeProduct(input);
@@ -50,13 +54,59 @@ export function useProductAnalysis() {
         if (results.length > 0) {
           setSearchResults(results.slice(0, 5));
         } else {
-          setNoResults(true);
+          // Prodotto non trovato - mostra il modal
+          setLastSearchedEan(input);
+          setShowProductNotFoundModal(true);
         }
       }
     } catch (e) {
-      setNoResults(true);
+      // In caso di errore, mostra comunque il modal
+      setLastSearchedEan(input);
+      setShowProductNotFoundModal(true);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleNewSearch = () => {
+    // Reset completo dello stato
+    setIsLoading(false);
+    setAnalysisResult(null);
+    setSearchResults([]);
+    setShowProductNotFoundModal(false);
+    setShowAddProductModal(false);
+    
+    // Focus sulla barra di ricerca
+    const searchBar = document.getElementById('scannerizza-form');
+    if (searchBar) {
+      searchBar.scrollIntoView({ behavior: 'smooth' });
+      const searchInput = searchBar.querySelector('input');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }
+  };
+
+  const handleAddProduct = () => {
+    setShowProductNotFoundModal(false);
+    setShowAddProductModal(true);
+  };
+
+  const handleCloseAddProductModal = () => {
+    // Reset completo dello stato
+    setIsLoading(false);
+    setAnalysisResult(null);
+    setSearchResults([]);
+    setShowAddProductModal(false);
+    
+    // Focus sulla barra di ricerca
+    const searchBar = document.getElementById('scannerizza-form');
+    if (searchBar) {
+      searchBar.scrollIntoView({ behavior: 'smooth' });
+      const searchInput = searchBar.querySelector('input');
+      if (searchInput) {
+        searchInput.focus();
+      }
     }
   };
 
@@ -67,16 +117,22 @@ export function useProductAnalysis() {
   const reset = () => {
     setAnalysisResult(null);
     setSearchResults([]);
-    setNoResults(false);
+    setShowProductNotFoundModal(false);
+    setShowAddProductModal(false);
   };
 
   return {
     analysisResult,
     isLoading,
-    noResults,
     searchResults,
+    showProductNotFoundModal,
+    showAddProductModal,
+    lastSearchedEan,
     handleProductAnalysis,
     handleProductSelect,
+    handleNewSearch,
+    handleAddProduct,
+    handleCloseAddProductModal,
     reset,
   };
 } 

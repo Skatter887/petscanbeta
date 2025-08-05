@@ -6,6 +6,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, ScanLine, X } from 'lucide-react';
 import { useProductAnalysis } from '@/hooks/useProductAnalysis';
 import BarcodeScanner from './BarcodeScanner';
+import ProductNotFoundModal from './ProductNotFoundModal';
+import AddProductModal from './AddProductModal';
 
 // Animazioni CSS personalizzate per le zampette decorative
 const pawAnimations = `
@@ -312,10 +314,15 @@ const HeroSection = () => {
   const {
     analysisResult,
     isLoading: analysisLoading,
-    noResults,
     searchResults,
+    showProductNotFoundModal,
+    showAddProductModal,
+    lastSearchedEan,
     handleProductAnalysis,
     handleProductSelect,
+    handleNewSearch,
+    handleAddProduct,
+    handleCloseAddProductModal,
     reset,
   } = useProductAnalysis();
 
@@ -568,6 +575,21 @@ const HeroSection = () => {
   const resetSearchField = () => {
     setSearch('');
     setShowSuggestions(false);
+  };
+
+  // Wrapper functions per resettare anche lo stato locale
+  const handleNewSearchWrapper = () => {
+    setIsLoading(false); // Reset dello stato locale
+    setSearch(''); // Pulisce il campo di ricerca
+    setShowSuggestions(false); // Nasconde i suggerimenti
+    handleNewSearch(); // Chiama la funzione del hook
+  };
+
+  const handleCloseAddProductModalWrapper = () => {
+    setIsLoading(false); // Reset dello stato locale
+    setSearch(''); // Pulisce il campo di ricerca
+    setShowSuggestions(false); // Nasconde i suggerimenti
+    handleCloseAddProductModal(); // Chiama la funzione del hook
   };
 
   // Reset loading quando l'analisi è completata
@@ -991,11 +1013,22 @@ const HeroSection = () => {
             </div>
           </div>
         )}
-        {/* Nessun risultato */}
-        {noResults && !analysisLoading && (
-          <div className="w-full mt-8 text-center text-red-500 font-semibold">Nessun prodotto trovato.</div>
-        )}
+
       </div>
+
+      {/* Modali per prodotto non trovato */}
+      <ProductNotFoundModal
+        isOpen={showProductNotFoundModal}
+        onClose={handleNewSearchWrapper}
+        onNewSearch={handleNewSearchWrapper}
+        onAddProduct={handleAddProduct}
+      />
+      
+      <AddProductModal
+        isOpen={showAddProductModal}
+        onClose={handleCloseAddProductModalWrapper}
+        eanCode={lastSearchedEan}
+      />
     </section>
   );
 };
