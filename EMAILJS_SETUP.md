@@ -76,7 +76,7 @@ export const EMAILJS_CONFIG = {
 - **Contenuto**: Include tutti i dettagli del prodotto richiesto
 
 ### Limitazioni
-- **Limite giornaliero**: 5 richieste per utente
+- **Limite giornaliero**: 500 richieste per utente
 - **Tracking**: Le richieste sono tracciate nel localStorage
 - **Reset**: Il contatore si resetta ogni giorno
 

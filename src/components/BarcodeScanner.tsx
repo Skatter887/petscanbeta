@@ -10,18 +10,15 @@ interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
   onManualEntry: (input: string) => void;
   isLoading?: boolean;
-  resetTrigger?: number; // Trigger per resettare il campo di input
-  onScannerStateChange?: (isActive: boolean) => void; // Callback per comunicare lo stato dello scanner
+  resetTrigger?: number;
+  onScannerStateChange?: (isActive: boolean) => void;
 }
 
 const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScannerStateChange }: BarcodeScannerProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const [manualInput, setManualInput] = useState('');
   const [inputMode, setInputMode] = useState<'scanner' | 'manual'>('scanner');
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>(undefined);
   const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
   
   const isMobile = useIsMobile();
@@ -32,219 +29,144 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
   const controlsRef = useRef<any>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Inizializza il code reader una sola volta
   useEffect(() => {
-    // Check browser compatibility
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setError('Il tuo browser non supporta l\'accesso alla fotocamera. Usa un browser moderno come Chrome, Firefox o Safari.');
-      return;
+    if (!codeReader.current) {
+      try {
+        codeReader.current = new BrowserMultiFormatReader();
+      } catch (error) {
+        console.error('Error initializing BrowserMultiFormatReader:', error);
+        setError('Browser non supportato per la scansione di barcode');
+      }
     }
+  }, []);
 
-    // Initialize the code reader
-    try {
-      codeReader.current = new BrowserMultiFormatReader();
-    } catch (error) {
-      console.error('Error initializing BrowserMultiFormatReader:', error);
-      setError('Browser non supportato per la scansione di barcode');
-      return;
-    }
-    
-    // Get available camera devices
-    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices.enumerateDevices()
-        .then(devices => {
-          const videoDevices = devices.filter(device => device.kind === 'videoinput');
-          setDevices(videoDevices);
-          
-          // Try to select the back camera for mobile devices
-          if (isMobile && videoDevices.length > 1) {
-            const backCamera = videoDevices.find(device => 
-              device.label.toLowerCase().includes('back') || 
-              device.label.toLowerCase().includes('rear') ||
-              device.label.toLowerCase().includes('environment')
-            );
-            if (backCamera) {
-              setSelectedDeviceId(backCamera.deviceId);
-            }
-          } else if (videoDevices.length > 0) {
-            setSelectedDeviceId(videoDevices[0].deviceId);
-          }
-        })
-        .catch(error => {
-          console.error('Error enumerating devices:', error);
-          setError('Impossibile accedere ai dispositivi multimediali');
-        });
-    } else {
-      setError('Il tuo browser non supporta l\'accesso alla fotocamera');
-    }
-
-    return () => {
-      stopScanning();
-    };
-  }, [isMobile]);
-
+  // Avvia automaticamente la scansione quando il componente è montato in modalità scanner
   useEffect(() => {
     if (inputMode === 'scanner' && !isScanning) {
-      startScanning();
+      // Avvia immediatamente la scansione
+      const timer = setTimeout(() => {
+        startScanning();
+      }, 200);
+      
+      return () => clearTimeout(timer);
     }
-    // Ferma la scansione quando si esce dalla modalità scanner
+    
     return () => {
       if (isScanning) stopScanning();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputMode]);
 
-  // Reset del campo di input quando cambia il resetTrigger
+  // Reset del campo di input
   useEffect(() => {
     if (resetTrigger) {
       setManualInput('');
     }
   }, [resetTrigger]);
 
-  // Notifica il cambio di stato dello scanner al componente padre
+  // Notifica lo stato dello scanner
   useEffect(() => {
     onScannerStateChange?.(isScanning);
   }, [isScanning, onScannerStateChange]);
 
-  const checkCameraPermission = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: {
-          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          facingMode: isMobile ? { ideal: 'environment' } : undefined
-        } 
-      });
-      
-      // Immediately stop the test stream
-      stream.getTracks().forEach(track => track.stop());
-      setHasPermission(true);
-      setError(null);
-      return true;
-    } catch (error: any) {
-      console.error('Camera permission error:', error);
-      setHasPermission(false);
-      
-      if (error.name === 'NotAllowedError') {
-        setError('Permesso fotocamera negato. Abilita l\'accesso alla fotocamera nelle impostazioni del browser.');
-      } else if (error.name === 'NotFoundError') {
-        setError('Nessuna fotocamera trovata sul dispositivo.');
-      } else if (error.name === 'NotReadableError') {
-        setError('Fotocamera già in uso da un\'altra applicazione.');
-      } else {
-        setError('Impossibile accedere alla fotocamera: ' + error.message);
-      }
-      return false;
-    }
-  };
-
   const startScanning = async () => {
-    // Initialize code reader if not already done
     if (!codeReader.current) {
-      try {
-        codeReader.current = new BrowserMultiFormatReader();
-      } catch (error) {
-        console.error('Error initializing code reader:', error);
-        setError('Impossibile inizializzare lo scanner. Verifica che il browser supporti la fotocamera.');
-        return;
-      }
+      setError('Scanner non inizializzato');
+      return;
     }
 
-    const hasPermissionResult = await checkCameraPermission();
-    if (!hasPermissionResult) return;
-
-    // Set scanning state first to make video element available
     setIsScanning(true);
     setError(null);
     setShowTimeoutMessage(false);
     scanningRef.current = true;
 
-    // Set timeout message after 3 seconds
+    // Timeout per il messaggio di aiuto
     timeoutRef.current = setTimeout(() => {
       if (scanningRef.current) {
         setShowTimeoutMessage(true);
       }
-    }, 3000);
+    }, 5000);
 
-    // Wait a short moment for the video element to be rendered
-    setTimeout(async () => {
-      if (!videoRef.current) {
-        setError('Elemento video non disponibile. Riprova.');
-        setIsScanning(false);
-        scanningRef.current = false;
-        return;
-      }
+    try {
+      // Configurazione più semplice e compatibile per la videocamera
+      const constraints = {
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: isMobile ? 'environment' : 'user'
+        }
+      };
 
-      try {
-        controlsRef.current = await codeReader.current!.decodeFromVideoDevice(
-          selectedDeviceId,
-          videoRef.current,
-          (result, error) => {
-            if (result && scanningRef.current) {
-              const scannedText = result.getText();
-              console.log('Barcode scanned:', scannedText);
-              
-              // Vibration feedback for mobile
-              if (isMobile && navigator.vibrate) {
-                navigator.vibrate(200);
-              }
-              
-              stopScanning();
-              onScan(scannedText);
-              
-              toast({
-                title: "Barcode scansionato!",
-                description: `Codice: ${scannedText}`,
-              });
+      controlsRef.current = await codeReader.current.decodeFromConstraints(
+        constraints,
+        videoRef.current!,
+        (result, error) => {
+          if (result && scanningRef.current) {
+            const scannedText = result.getText();
+            console.log('Barcode scanned:', scannedText);
+            
+            // Feedback vibrazione su mobile
+            if (isMobile && navigator.vibrate) {
+              navigator.vibrate(200);
             }
             
-            if (error && !(error instanceof NotFoundException)) {
-              console.warn('Scanning error:', error);
-            }
+            stopScanning();
+            onScan(scannedText);
+            
+            toast({
+              title: "Barcode scansionato!",
+              description: `Codice: ${scannedText}`,
+            });
           }
-        );
-      } catch (error: any) {
-        console.error('Start scanning error:', error);
-        setError('Errore nell\'avvio della scansione: ' + error.message);
-        setIsScanning(false);
-        scanningRef.current = false;
+          
+          if (error && !(error instanceof NotFoundException)) {
+            console.warn('Scanning error:', error);
+          }
+        }
+      );
+    } catch (error: any) {
+      console.error('Start scanning error:', error);
+      
+      // Gestione errori più specifica
+      let errorMessage = 'Errore nell\'avvio della scansione';
+      
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Permesso fotocamera negato. Abilita l\'accesso alla fotocamera.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'Nessuna fotocamera trovata sul dispositivo.';
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = 'Fotocamera già in uso da un\'altra applicazione.';
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = 'Configurazione fotocamera non supportata. Riprova.';
+      } else if (error.message) {
+        errorMessage += ': ' + error.message;
       }
-    }, 100); // Small delay to ensure video element is rendered
+      
+      setError(errorMessage);
+      setIsScanning(false);
+      scanningRef.current = false;
+    }
   };
 
   const stopScanning = () => {
-    scanningRef.current = false;
-    setIsScanning(false);
-    setShowTimeoutMessage(false);
-    
-    // Clear timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
     
     if (controlsRef.current) {
-      try {
-        controlsRef.current.stop();
-      } catch (error) {
-        console.warn('Error stopping scanner:', error);
-      }
+      controlsRef.current.stop();
       controlsRef.current = null;
     }
     
-    if (codeReader.current) {
-      try {
-        codeReader.current.reset();
-      } catch (error) {
-        console.warn('Error resetting code reader:', error);
-      }
-    }
+    scanningRef.current = false;
+    setIsScanning(false);
+    setShowTimeoutMessage(false);
   };
 
   const handleManualSubmit = () => {
     if (manualInput.trim()) {
       onManualEntry(manualInput.trim());
-      setManualInput('');
     }
   };
 
@@ -261,108 +183,127 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
 
   const switchToScanner = () => {
     setInputMode('scanner');
-    setError(null);
   };
 
   return (
     <div className="w-full flex flex-col gap-2 rounded-xl bg-transparent p-0 relative shadow-none box-border max-w-full overflow-hidden">
-      {/* Scanner Mode - nessun tab, solo camera */}
+      {/* Scanner Mode */}
       {inputMode === 'scanner' && (
         <div className="flex flex-col gap-1 w-full max-w-full box-border">
-          {/* Camera Preview - compatta */}
+          {/* Camera Preview - SEMPRE visibile quando in modalità scanner */}
           <div className="relative w-full max-w-full box-border">
             <video
               ref={videoRef}
-              className={`w-full h-64 md:h-96 bg-black rounded-xl object-cover ${isScanning ? 'block' : 'hidden'}`}
+              className="w-full h-64 md:h-96 bg-black rounded-xl object-cover"
               playsInline
               muted
               autoPlay
+              style={{
+                objectFit: 'cover',
+              }}
             />
-            {isScanning && (
-              <>
-                {/* Overlay con frame rettangolare e bordo animato */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-                  {/* Frame rettangolare con bordo animato */}
-                  <div className="relative w-48 h-32 md:w-64 md:h-40">
-                    {/* Bordo animato verde */}
-                    <div className="absolute inset-0 border-2 rounded-lg animate-pulse" 
-                         style={{ 
-                           borderColor: '#1FC77C',
-                           boxShadow: '0 0 20px rgba(31, 199, 124, 0.5)',
-                           animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                         }} />
-                    
-                    {/* Corner indicators */}
-                    <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-white rounded-tl" />
-                    <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-white rounded-tr" />
-                    <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-white rounded-bl" />
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-white rounded-br" />
-                  </div>
-                  
-                  {/* Icona flash in basso a destra */}
-                  <div className="absolute bottom-6 right-6">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-flash w-8 h-8 opacity-90"><polygon points="7 2 17 2 11 12 17 12 7 22 13 12 7 12 13 2 7 2"></polygon></svg>
-                  </div>
-                </div>
+            
+            {/* Overlay con frame rettangolare - SEMPRE visibile quando in modalità scanner */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+              <div className="relative w-48 h-32 md:w-64 md:h-40">
+                {/* Bordo animato verde */}
+                <div className="absolute inset-0 border-2 rounded-lg animate-pulse" 
+                     style={{ 
+                       borderColor: '#1FC77C',
+                       boxShadow: '0 0 20px rgba(31, 199, 124, 0.5)',
+                       animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                     }} />
                 
-                <Button
-                  onClick={stopScanning}
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2 z-30 rounded-full"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-                
-                {/* Messaggio di timeout */}
-                {showTimeoutMessage && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 bg-black/80 text-white px-4 py-2 rounded-lg text-center max-w-xs">
-                    <p className="text-sm">
-                      Avvicina meglio il codice a barre o verifica la luce
-                    </p>
-                  </div>
-                )}
-                
-                <div className="absolute bottom-1 left-2 right-2 text-center z-30">
-                  <p className="text-xs text-white bg-black/50 rounded px-2 py-1">
-                    {isMobile ? 'Inquadra il barcode e mantieni fermo il dispositivo' : 'Inquadra il barcode nel riquadro'}
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Scanner Controls */}
-          {!isScanning && (
-            <div className="text-center w-full max-w-full box-border">
-              <div className="w-12 md:w-16 h-12 md:h-16 mx-auto bg-accent rounded-full flex items-center justify-center mb-1">
-                {isMobile ? (
-                  <Smartphone className="w-6 md:w-10 h-6 md:h-10" style={{ color: '#1FC77C' }} />
-                ) : (
-                  <Camera className="w-6 md:w-10 h-6 md:h-10" style={{ color: '#1FC77C' }} />
-                )}
+                {/* Corner indicators */}
+                <div className="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-white rounded-tl" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-white rounded-tr" />
+                <div className="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-white rounded-bl" />
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-white rounded-br" />
               </div>
-              <p className="text-xs text-muted-foreground mb-1 px-2">
-                {isMobile 
-                  ? 'Tocca per avviare la scansione.'
-                  : 'Tocca per avviare la scansione del barcode'
-                }
+            </div>
+            
+            {/* Pulsanti di controllo - SEMPRE visibili quando in modalità scanner */}
+            <div className="absolute top-2 right-2 z-30 flex gap-2">
+              <Button
+                onClick={() => {
+                  stopScanning();
+                  setTimeout(() => startScanning(), 500);
+                }}
+                variant="secondary"
+                size="sm"
+                className="rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30"
+              >
+                <Camera className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={stopScanning}
+                variant="destructive"
+                size="sm"
+                className="rounded-full"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            {/* Messaggio di timeout */}
+            {showTimeoutMessage && (
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30 bg-black/80 text-white px-4 py-2 rounded-lg text-center max-w-xs">
+                <p className="text-sm">
+                  Avvicina meglio il codice a barre o verifica la luce
+                </p>
+              </div>
+            )}
+            
+            {/* Istruzioni - SEMPRE visibili quando in modalità scanner */}
+            <div className="absolute bottom-1 left-2 right-2 text-center z-30">
+              <p className="text-xs text-white bg-black/50 rounded px-2 py-1">
+                {isMobile ? 'Inquadra il barcode e mantieni fermo il dispositivo' : 'Inquadra il barcode nel riquadro'}
               </p>
             </div>
-          )}
+          </div>
 
-          {/* Error Display */}
+          {/* Error Display - SOLO quando c'è un errore */}
           {error && (
-            <div className="flex items-center space-x-2 p-1 bg-destructive/10 border border-destructive/20 rounded-lg w-full max-w-full box-border">
-              <AlertCircle className="w-4 h-4 text-destructive" />
-              <p className="text-xs text-destructive">{error}</p>
+            <div className="flex flex-col space-y-2 p-2 bg-destructive/10 border border-destructive/20 rounded-lg w-full max-w-full box-border">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-destructive" />
+                <p className="text-xs text-destructive flex-1">{error}</p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setError(null);
+                    startScanning();
+                  }}
+                  size="sm"
+                  className="text-xs bg-destructive text-white hover:bg-destructive/90"
+                >
+                  Riprova
+                </Button>
+                <Button
+                  onClick={switchToManual}
+                  size="sm"
+                  variant="outline"
+                  className="text-xs"
+                >
+                  Inserisci manualmente
+                </Button>
+              </div>
             </div>
           )}
 
-          {/* Mobile Tips */}
-          {isMobile && !isScanning && !error && (
-            <div className="p-1 bg-accent rounded-lg text-xs w-full max-w-full box-border" style={{ borderColor: '#1FC77C', borderWidth: '1px' }}>
-              <strong style={{ color: '#1FC77C' }}>Suggerimenti:</strong> Buona illuminazione • Dispositivo fermo • Metti a fuoco
+          {/* Switch to manual input - SOLO quando non c'è errore */}
+          {!error && (
+            <div className="text-center w-full max-w-full box-border">
+              <Button
+                variant="ghost"
+                onClick={switchToManual}
+                className="text-xs hover:bg-accent-foreground/10"
+                style={{ color: '#1FC77C' }}
+                disabled={isLoading}
+              >
+                Preferisci inserire manualmente?
+              </Button>
             </div>
           )}
         </div>
@@ -371,15 +312,6 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
       {/* Manual Input Mode */}
       {inputMode === 'manual' && (
         <div className="flex flex-col gap-2 w-full max-w-full box-border">
-          <div className="text-center mb-1">
-            <div className="w-12 md:w-16 h-12 md:h-16 mx-auto bg-accent rounded-full flex items-center justify-center mb-1">
-              <Search className="w-6 md:w-10 h-6 md:h-10" style={{ color: '#F5953B' }} />
-            </div>
-            <p className="text-xs text-muted-foreground px-2">
-              Inserisci il barcode o il nome del prodotto
-            </p>
-          </div>
-
           <div className="flex gap-2 items-center w-full max-w-full box-border">
             <Input
               type="text"

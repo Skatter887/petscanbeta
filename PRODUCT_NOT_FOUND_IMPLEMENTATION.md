@@ -29,7 +29,7 @@ Questa implementazione gestisce il caso in cui un utente cerca un codice EAN non
 - **Scopo**: Gestisce l'invio delle richieste di prodotto mancante
 - **Caratteristiche**:
   - Utilizza EmailJS per l'invio email
-  - Limite giornaliero di 5 richieste per utente
+  - Limite giornaliero di 500 richieste per utente
   - Tracking delle richieste nel localStorage
   - Email inviata a `alessandro.miu@gmail.com`
   - Oggetto: "Richiesta Aggiunta PetScan"
@@ -104,7 +104,7 @@ Data: [data e ora]
 
 ## Limitazioni e Sicurezza
 
-- **Limite giornaliero**: 5 richieste per utente (resettato ogni giorno)
+- **Limite giornaliero**: 500 richieste per utente (resettato ogni giorno)
 - **Validazione**: Campi obbligatori e validazione email
 - **Tracking**: Le richieste sono tracciate nel localStorage per evitare abusi
 - **Email**: Utilizzo di FormSubmit per l'invio sicuro delle email

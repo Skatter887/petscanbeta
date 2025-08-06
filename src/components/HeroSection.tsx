@@ -624,55 +624,63 @@ const HeroSection = () => {
           </div>
         </div>
       )}
-      {/* Logo PetScan - visibile solo su mobile con safe area support */}
-      <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.25rem + env(safe-area-inset-top))' : 'calc(1rem + env(safe-area-inset-top))' }}>
-        <img 
-          src="/logo_no_cont.png" 
-          alt="PetScan Logo" 
-          className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200 logo-webapp-lower`}
-        />
-      </div>
-
-      {/* Animazione zampette - visibile solo su mobile */}
-      <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
-        {pawTrajectory.map((paw, index) => (
-          <AnimatedPawPrint
-            key={index}
-            position={paw.position}
-            delay={paw.delay}
-            color={paw.color}
-            isVisible={isPawAnimationActive && index < pawAnimationStep}
-            side={paw.side}
+      {/* Logo PetScan - visibile solo su mobile con safe area support, nascosto quando scanner è attivo */}
+      {!showScanner && (
+        <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.25rem + env(safe-area-inset-top))' : 'calc(1rem + env(safe-area-inset-top))' }}>
+          <img 
+            src="/logo_no_cont.png" 
+            alt="PetScan Logo" 
+            className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200 logo-webapp-lower`}
           />
-        ))}
-      </div>
+        </div>
+      )}
 
-      {/* Zampette decorative pulsanti - visibili solo su mobile/tablet */}
-      <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
-        <style>{pawAnimations}</style>
-        {generateDecorativePawPositions().map((paw, index) => (
-          <DecorativePawPrint
-            key={`decorative-${index}`}
-            position={{ x: paw.x, y: paw.y }}
-            color={paw.color}
-            size={paw.size}
-            delay={paw.delay}
-          />
-        ))}
-      </div>
+      {/* Animazione zampette - visibile solo su mobile, nascosta quando scanner è attivo */}
+      {!showScanner && (
+        <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
+          {pawTrajectory.map((paw, index) => (
+            <AnimatedPawPrint
+              key={index}
+              position={paw.position}
+              delay={paw.delay}
+              color={paw.color}
+              isVisible={isPawAnimationActive && index < pawAnimationStep}
+              side={paw.side}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Zampette decorative pulsanti - visibili solo su mobile/tablet, nascoste quando scanner è attivo */}
+      {!showScanner && (
+        <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
+          <style>{pawAnimations}</style>
+          {generateDecorativePawPositions().map((paw, index) => (
+            <DecorativePawPrint
+              key={`decorative-${index}`}
+              position={{ x: paw.x, y: paw.y }}
+              color={paw.color}
+              size={paw.size}
+              delay={paw.delay}
+            />
+          ))}
+        </div>
+      )}
 
       <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-center flex-1 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-2' : 'gap-4'} md:gap-8 hero-content-wrapper`} style={{ paddingBottom: analysisResult ? '2rem' : '1rem', paddingLeft: analysisResult ? '0.5rem' : '1rem', paddingRight: analysisResult ? '0.5rem' : '1rem' }}>
-        {/* Hero Content (testo invariato) */}
-        <div className={`${showScanner || analysisResult ? 'mt-8' : ''}`}>
-        <HeroContent 
-          onAnalyzeClick={handleAnalyzeClick}
-          onExamplesClick={() => {}}
-          isAnalysisActive={analysisResult !== null}
-        />
-        </div>
+        {/* Hero Content (testo invariato) - nascosto quando scanner è attivo */}
+        {!showScanner && (
+          <div className={`${analysisResult ? 'mt-8' : ''}`}>
+            <HeroContent 
+              onAnalyzeClick={handleAnalyzeClick}
+              onExamplesClick={() => {}}
+              isAnalysisActive={analysisResult !== null}
+            />
+          </div>
+        )}
         
-        {/* Barra di ricerca - visibile solo su mobile */}
-        <div id="scannerizza-form" className="w-full md:hidden relative">
+        {/* Barra di ricerca - visibile solo su mobile, espansa quando scanner è attivo */}
+        <div id="scannerizza-form" className={`w-full md:hidden relative ${showScanner ? 'flex-1 flex flex-col justify-center' : ''}`}>
           <form
             onSubmit={handleSubmit}
             className={`w-full max-w-xl mx-auto flex flex-row items-center gap-0 shadow-lg border-2 border-transparent relative overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-3 px-2 backdrop-blur-md min-h-[60px]'}

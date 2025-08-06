@@ -14,11 +14,12 @@ export interface ProductRequestResult {
 }
 
 const SUBMISSIONS_KEY = 'petscan_product_requests';
-const MAX_DAILY_REQUESTS = 5;
+const MAX_DAILY_REQUESTS = 500;
 
 interface RequestData {
   count: number;
   date: string;
+  lastRequestTime?: number;
 }
 
 const getToday = () => {
@@ -26,9 +27,11 @@ const getToday = () => {
   return now.toISOString().split('T')[0]; // YYYY-MM-DD format
 };
 
-const checkRequestLimit = (): { canRequest: boolean; remaining: number } => {
+const checkRequestLimit = (): { canRequest: boolean; remaining: number; timeUntilNext?: number } => {
   const stored = localStorage.getItem(SUBMISSIONS_KEY);
   const today = getToday();
+  const now = Date.now();
+  const MIN_TIME_BETWEEN_REQUESTS = 10000; // 10 seconds in milliseconds
 
   if (!stored) {
     return { canRequest: true, remaining: MAX_DAILY_REQUESTS };
@@ -43,26 +46,34 @@ const checkRequestLimit = (): { canRequest: boolean; remaining: number } => {
 
   // Check if user has reached the limit
   const remaining = MAX_DAILY_REQUESTS - data.count;
+  
+  // Check time between requests
+  if (data.lastRequestTime && (now - data.lastRequestTime) < MIN_TIME_BETWEEN_REQUESTS) {
+    const timeUntilNext = MIN_TIME_BETWEEN_REQUESTS - (now - data.lastRequestTime);
+    return { canRequest: false, remaining, timeUntilNext };
+  }
+
   return { canRequest: remaining > 0, remaining };
 };
 
 const recordRequest = () => {
   const today = getToday();
+  const now = Date.now();
   const stored = localStorage.getItem(SUBMISSIONS_KEY);
 
   let data: RequestData;
 
   if (!stored) {
-    data = { count: 1, date: today };
+    data = { count: 1, date: today, lastRequestTime: now };
   } else {
     const existing: RequestData = JSON.parse(stored);
     
     if (existing.date !== today) {
       // New day, reset counter
-      data = { count: 1, date: today };
+      data = { count: 1, date: today, lastRequestTime: now };
     } else {
       // Same day, increment counter
-      data = { count: existing.count + 1, date: today };
+      data = { count: existing.count + 1, date: today, lastRequestTime: now };
     }
   }
 
@@ -72,13 +83,21 @@ const recordRequest = () => {
 export const sendProductRequest = async (requestData: ProductRequestData): Promise<ProductRequestResult> => {
   try {
     // Check request limit first
-    const { canRequest, remaining } = checkRequestLimit();
+    const { canRequest, remaining, timeUntilNext } = checkRequestLimit();
     
     if (!canRequest) {
-      return {
-        success: false,
-        message: `Hai raggiunto il limite giornaliero di ${MAX_DAILY_REQUESTS} richieste. Potrai inviare una nuova richiesta domani. Grazie per la comprensione! 🐾`
-      };
+      if (timeUntilNext) {
+        const secondsLeft = Math.ceil(timeUntilNext / 1000);
+        return {
+          success: false,
+          message: `Per favore aspetta ${secondsLeft} secondi prima di inviare un'altra richiesta. Questo aiuta a prevenire lo spam. 🐾`
+        };
+      } else {
+        return {
+          success: false,
+          message: `Hai raggiunto il limite giornaliero di ${MAX_DAILY_REQUESTS} richieste. Potrai inviare una nuova richiesta domani. Grazie per la comprensione! 🐾`
+        };
+      }
     }
 
     console.log('Sending product request with data:', requestData);
