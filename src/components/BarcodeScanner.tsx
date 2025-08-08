@@ -156,285 +156,176 @@ const BarcodeScanner = ({
       let stream: MediaStream;
       let cameraFound = false;
 
-      const common: MediaTrackConstraints = {
-        width: { ideal: 1920, min: 1280 },
-        height: { ideal: 1080, min: 720 },
-        frameRate: { ideal: 30, min: 15 }
-      };
+      const isiOS = isIOS();
+      const safari = isSafari();
       
-      // Abilita autofocus continuo
-      (common as any).focusMode = 'continuous';
-
-      if (isMobile) {
-        const isiOS = isIOS();
-        const safari = isSafari();
-        
+      console.log(`🔍 DEBUGGING DEVICE DETECTION:`);
+      console.log(`   isMobile hook: ${isMobile}`);
+      console.log(`   isIOS(): ${isiOS}`);
+      console.log(`   isSafari(): ${safari}`);
+      console.log(`   userAgent: ${navigator.userAgent}`);
+      
+      // FORZA LA LOGICA PER iOS anche se isMobile è false
+      if (isMobile || isiOS) {
+        console.log(`📱 ENTRANDO NELLA LOGICA MOBILE/iOS`);
         console.log(`📱 Device: iOS=${isiOS}, Safari=${safari}`);
 
-        // STRATEGIA SUPER AGGRESSIVA: Enumera PRIMA i dispositivi per forzare il device posteriore
-        if (!cameraFound) {
-          try {
-            console.log('🔄 STRATEGIA SUPER AGGRESSIVA: Device enumeration FIRST');
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices = devices.filter((d) => d.kind === 'videoinput');
-            console.log('📋 ALL Available devices:', videoDevices.map((d, i) => ({ index: i, label: d.label, deviceId: d.deviceId })));
-            
-            const rear = await getBestRearCamera(videoDevices);
-            if (rear) {
-              console.log('🎯 FORCING REAR CAMERA:', rear.label, rear.deviceId);
-              
-              // FORZA deviceId specifico senza facingMode per evitare conflitti
+        // STRATEGIA SEMPLIFICATA: Prima prova con enumerazione dispositivi
+        console.log('🔄 STRATEGIA DIRETTA: Enumera e forza dispositivo posteriore');
+        
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((d) => d.kind === 'videoinput');
+        console.log('📋 Dispositivi disponibili:', videoDevices.map((d, i) => ({ 
+          index: i, 
+          label: d.label, 
+          deviceId: d.deviceId.substring(0, 10) + '...' 
+        })));
+
+        // TENTATIVO 1: Cerca fotocamera con nome che indica posteriore
+        if (!cameraFound && videoDevices.length > 0) {
+          // Su iPhone, spesso la fotocamera posteriore è l'ultima o quella con indice 1
+          let rearCamera = null;
+          
+          // Prima cerca per nome
+          for (const device of videoDevices) {
+            const label = device.label.toLowerCase();
+            if (label.includes('back') || 
+                label.includes('rear') || 
+                label.includes('environment') || 
+                label.includes('main') ||
+                label.includes('wide') ||
+                label.includes('ultra') ||
+                (label.includes('camera') && !label.includes('front') && !label.includes('face'))) {
+              rearCamera = device;
+              break;
+            }
+          }
+          
+          // Se non trova per nome, usa strategia posizionale
+          if (!rearCamera && videoDevices.length > 1) {
+            // Su iPhone, spesso la fotocamera posteriore è quella con indice > 0
+            rearCamera = videoDevices[videoDevices.length - 1]; // Ultima camera
+          }
+
+          if (rearCamera) {
+            try {
+              console.log(`🎯 Tentativo fotocamera: ${rearCamera.label}`);
               stream = await navigator.mediaDevices.getUserMedia({
                 video: { 
-                  deviceId: { exact: rear.deviceId },
-                  width: { ideal: 1920, min: 1280 },
-                  height: { ideal: 1080, min: 720 },
-                  frameRate: { ideal: 30, min: 15 }
+                  deviceId: { exact: rearCamera.deviceId }
                 }
               });
-              cameraFound = true;
-              selectedDeviceIdRef.current = rear.deviceId;
-              console.log('✅ SUCCESS: Using specific rear camera device');
-            } else {
-              console.log('❌ No rear camera found in device enumeration');
-            }
-          } catch (error) {
-            console.log('❌ Device enumeration strategy failed:', error);
-          }
-        }
-
-        // STRATEGIA 1: Environment exact (più aggressivo per iOS) - SOLO se device enumeration fallisce
-        if (!cameraFound) {
-          try {
-            console.log('🔄 Tentativo 1: Environment exact (rear camera)');
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { 
-                facingMode: { exact: 'environment' },
-                width: { ideal: 1920, min: 1280 },
-                height: { ideal: 1080, min: 720 },
-                frameRate: { ideal: 30, min: 15 }
-              }
-            });
-            cameraFound = true;
-            const track = stream.getVideoTracks()[0];
-            selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
-            console.log('✅ Successfully using environment camera (exact)');
-          } catch (error) {
-            console.log('❌ Environment exact failed:', error);
-          }
-        }
-
-        // STRATEGIA 2: Enumera dispositivi e forza fotocamera posteriore
-        if (!cameraFound) {
-          try {
-            console.log('🔄 Tentativo 2: Enumerating devices for rear camera');
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices = devices.filter((d) => d.kind === 'videoinput');
-            console.log('Available devices:', videoDevices.map(d => ({ label: d.label, deviceId: d.deviceId })));
-            
-            const rear = await getBestRearCamera(videoDevices);
-            if (rear) {
-              console.log('Found rear camera:', rear.label);
-              stream = await navigator.mediaDevices.getUserMedia({
-                video: { 
-                  deviceId: { exact: rear.deviceId },
-                  width: { ideal: 1920, min: 1280 },
-                  height: { ideal: 1080, min: 720 },
-                  frameRate: { ideal: 30, min: 15 }
-                }
-              });
-              cameraFound = true;
-              selectedDeviceIdRef.current = rear.deviceId;
-              console.log('✅ Successfully using rear camera by deviceId');
-            }
-          } catch (error) {
-            console.log('❌ Device enumeration failed:', error);
-          }
-        }
-
-        // STRATEGIA 3: Environment senza exact (fallback)
-        if (!cameraFound) {
-          try {
-            console.log('🔄 Tentativo 3: Environment non-exact');
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { 
-                facingMode: 'environment',
-                width: { ideal: 1920, min: 1280 },
-                height: { ideal: 1080, min: 720 },
-                frameRate: { ideal: 30, min: 15 }
-              }
-            });
-            cameraFound = true;
-            const track = stream.getVideoTracks()[0];
-            selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
-            console.log('✅ Successfully using environment camera (non-exact)');
-          } catch (error) {
-            console.log('❌ Environment non-exact failed:', error);
-          }
-        }
-
-        // STRATEGIA 4: iOS specific - constraints molto specifici
-        if (!cameraFound && isiOS) {
-          try {
-            console.log('🔄 Tentativo 4: iOS-specific constraints');
-            const iosConstraints: MediaTrackConstraints = {
-              facingMode: 'environment',
-              width: { ideal: 1920, min: 1280 },
-              height: { ideal: 1080, min: 720 },
-              frameRate: { ideal: 30, min: 15 }
-            };
-            
-            if (safari) {
-              console.log('Using Safari-specific constraints');
-              (iosConstraints as any).deviceId = undefined;
-            }
-            
-            stream = await navigator.mediaDevices.getUserMedia({ video: iosConstraints });
-            cameraFound = true;
-            const track = stream.getVideoTracks()[0];
-            selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
-            console.log('✅ Successfully using iOS-specific camera');
-          } catch (error) {
-            console.log('❌ iOS-specific constraints failed:', error);
-          }
-        }
-
-        // STRATEGIA 5: iOS Safari FORCE rear camera with multiple attempts
-        if (!cameraFound && isiOS && safari) {
-          // Prova 5A: Safari con constraints minimi
-          try {
-            console.log('🔄 Tentativo 5A: iOS Safari minimal constraints');
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: 'environment',
-                width: { ideal: 1280, min: 640 },
-                height: { ideal: 720, min: 480 }
-              }
-            });
-            cameraFound = true;
-            const track = stream.getVideoTracks()[0];
-            selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
-            console.log('✅ Successfully using iOS Safari minimal camera');
-          } catch (error) {
-            console.log('❌ iOS Safari minimal constraints failed:', error);
-          }
-
-          // Prova 5B: Safari con SOLO facingMode
-          if (!cameraFound) {
-            try {
-              console.log('🔄 Tentativo 5B: iOS Safari ONLY facingMode');
-              stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }
-              });
-              cameraFound = true;
-              const track = stream.getVideoTracks()[0];
-              selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
-              console.log('✅ Successfully using iOS Safari only facingMode');
-            } catch (error) {
-              console.log('❌ iOS Safari only facingMode failed:', error);
-            }
-          }
-
-          // Prova 5C: Safari senza constraints (poi switch)
-          if (!cameraFound) {
-            try {
-              console.log('🔄 Tentativo 5C: iOS Safari no constraints');
-              stream = await navigator.mediaDevices.getUserMedia({ video: true });
               
-              // Verifica se è frontale e prova a cambiare
               const track = stream.getVideoTracks()[0];
               const settings = track.getSettings();
-              console.log('Current camera settings:', settings);
+              console.log('✅ Fotocamera attivata:', settings);
               
-              if (settings.facingMode === 'user') {
-                console.log('Got front camera, stopping and retrying...');
-                stream.getTracks().forEach(t => t.stop());
-                
-                // Prova a ottenere l'altro dispositivo
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(d => d.kind === 'videoinput');
-                if (videoDevices.length > 1) {
-                  const otherDevice = videoDevices.find(d => d.deviceId !== settings.deviceId);
-                  if (otherDevice) {
-                    console.log('Trying other device:', otherDevice.label);
-                    stream = await navigator.mediaDevices.getUserMedia({
-                      video: { deviceId: { exact: otherDevice.deviceId } }
-                    });
-                    cameraFound = true;
-                    selectedDeviceIdRef.current = otherDevice.deviceId;
-                    console.log('✅ Successfully switched to other camera');
-                  }
-                }
-              } else {
+              // Verifica se è effettivamente posteriore
+              if (settings.facingMode === 'environment' || !settings.facingMode) {
                 cameraFound = true;
-                selectedDeviceIdRef.current = settings.deviceId;
-                console.log('✅ Successfully using no-constraint camera');
+                selectedDeviceIdRef.current = rearCamera.deviceId;
+                console.log('✅ SUCCESSO: Fotocamera posteriore confermata');
+              } else {
+                console.log('⚠️ Fotocamera frontale rilevata, provo altro dispositivo...');
+                stream.getTracks().forEach(t => t.stop());
               }
             } catch (error) {
-              console.log('❌ iOS Safari no constraints failed:', error);
+              console.log('❌ Errore tentativo fotocamera specifica:', error);
             }
           }
         }
 
-        // STRATEGIA 6: Prova con il secondo dispositivo (spesso la fotocamera posteriore)
-        if (!cameraFound) {
-          try {
-            console.log('🔄 Tentativo 6: Using second device (likely rear camera)');
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices = devices.filter((d) => d.kind === 'videoinput');
-            
-            if (videoDevices.length > 1) {
-              const secondDevice = videoDevices[1]; // Il secondo dispositivo è spesso la fotocamera posteriore
+        // TENTATIVO 2: Se il primo fallisce, prova SISTEMATICAMENTE ogni dispositivo
+        if (!cameraFound && videoDevices.length > 1) {
+          console.log('🔍 DEBUGGING: Testo TUTTI i dispositivi disponibili...');
+          
+          for (let i = 0; i < videoDevices.length; i++) {
+            try {
+              console.log(`🔄 TEST DISPOSITIVO ${i}/${videoDevices.length - 1}:`);
+              console.log(`   Nome: ${videoDevices[i].label}`);
+              console.log(`   DeviceId: ${videoDevices[i].deviceId.substring(0, 20)}...`);
+              
+              const testStream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: videoDevices[i].deviceId } }
+              });
+              
+              const track = testStream.getVideoTracks()[0];
+              const settings = track.getSettings();
+              
+              console.log(`📋 SETTINGS DISPOSITIVO ${i}:`, {
+                facingMode: settings.facingMode,
+                width: settings.width,
+                height: settings.height,
+                deviceId: settings.deviceId?.substring(0, 20) + '...'
+              });
+              
+              // Logica più permissiva: accetta qualsiasi cosa che NON sia esplicitamente 'user'
+              if (settings.facingMode !== 'user') {
+                stream = testStream;
+                cameraFound = true;
+                selectedDeviceIdRef.current = videoDevices[i].deviceId;
+                console.log(`🎯 SUCCESSO: Dispositivo ${i} SELEZIONATO (facingMode: ${settings.facingMode || 'undefined'})`);
+                break;
+              } else {
+                console.log(`❌ Dispositivo ${i} RIFIUTATO (è frontale: facingMode=${settings.facingMode})`);
+                testStream.getTracks().forEach(t => t.stop());
+              }
+            } catch (error) {
+              console.log(`❌ ERRORE Dispositivo ${i}:`, error);
+            }
+          }
+          
+          // Se ancora non trova, prova con strategia inversa (prendi qualsiasi NON-primo)
+          if (!cameraFound && videoDevices.length > 1) {
+            console.log('⚠️ Strategia di emergenza: uso ultimo dispositivo disponibile');
+            try {
+              const lastDevice = videoDevices[videoDevices.length - 1];
               stream = await navigator.mediaDevices.getUserMedia({
-                video: { 
-                  deviceId: { exact: secondDevice.deviceId },
-                  width: { ideal: 1920, min: 1280 },
-                  height: { ideal: 1080, min: 720 },
-                  frameRate: { ideal: 30, min: 15 }
-                }
+                video: { deviceId: { exact: lastDevice.deviceId } }
               });
               cameraFound = true;
-              selectedDeviceIdRef.current = secondDevice.deviceId;
-              console.log('✅ Successfully using second device as rear camera');
+              selectedDeviceIdRef.current = lastDevice.deviceId;
+              console.log(`🆘 EMERGENZA: Usando ultimo dispositivo: ${lastDevice.label}`);
+            } catch (error) {
+              console.log('❌ Anche strategia di emergenza fallita:', error);
             }
-          } catch (error) {
-            console.log('❌ Second device failed:', error);
           }
         }
 
-        // STRATEGIA 7: Ultimo tentativo - prova con constraints molto specifici per iOS
-        if (!cameraFound && isiOS) {
+        // TENTATIVO 3: Fallback con constraints classici
+        if (!cameraFound) {
           try {
-            console.log('🔄 Tentativo 7: iOS final attempt with specific constraints');
+            console.log('🔄 Fallback: facingMode environment');
             stream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: { exact: 'environment' },
-                width: { ideal: 1920, min: 1280 },
-                height: { ideal: 1080, min: 720 },
-                frameRate: { ideal: 30, min: 15 },
-                aspectRatio: { ideal: 16/9 }
-              }
+              video: { facingMode: { exact: 'environment' } }
             });
             cameraFound = true;
             const track = stream.getVideoTracks()[0];
             selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
-            console.log('✅ Successfully using iOS final attempt');
+            console.log('✅ Successo con facingMode environment');
           } catch (error) {
-            console.log('❌ iOS final attempt failed:', error);
+            console.log('❌ Fallback environment failed:', error);
           }
         }
 
-        // SE NON TROVA LA FOTOCAMERA POSTERIORE, LANCIA UN ERRORE
+        // SE ANCORA NON TROVA, ERRORE
         if (!cameraFound) {
-          throw new Error('Fotocamera posteriore non disponibile. Impossibile utilizzare la fotocamera frontale.');
+          throw new Error('Fotocamera posteriore non disponibile su questo dispositivo');
         }
       } else {
-        // Desktop → frontale
+        // Desktop/Non-mobile → frontale
+        console.log('💻 DESKTOP: Usando fotocamera frontale');
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { ...common, facingMode: 'user' }
+          video: { 
+            facingMode: 'user',
+            width: { ideal: 1920, min: 1280 },
+            height: { ideal: 1080, min: 720 }
+          }
         });
         const track = stream.getVideoTracks()[0];
         selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
+        cameraFound = true;
+        console.log('✅ Desktop camera attivata');
       }
 
       // Aggancia lo stream al <video>
