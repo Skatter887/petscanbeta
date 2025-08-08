@@ -88,11 +88,11 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
       let stream: MediaStream;
       let cameraType = 'unknown';
 
-      // Su mobile, prova a usare la fotocamera posteriore
+      // Su mobile, FORZA l'uso della fotocamera posteriore
       if (isMobile) {
-        console.log('Mobile device detected, trying to use rear camera...');
+        console.log('Mobile device detected, forcing rear camera...');
         
-        // Prima prova con environment (fotocamera posteriore)
+        // Prova prima con environment (fotocamera posteriore) - FORZA
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
@@ -103,25 +103,65 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
           cameraType = 'environment (rear)';
           console.log('✅ Successfully using environment camera (rear)');
         } catch (envError) {
-          console.log('❌ Environment camera not available, trying user camera...');
-          // Se environment fallisce, prova con user (fotocamera frontale)
+          console.log('❌ Environment camera failed, trying alternative approach...');
+          
+          // Seconda prova: lista tutte le fotocamere e scegli quella posteriore
           try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            console.log('Available video devices:', videoDevices);
+            
+            // Cerca una fotocamera che potrebbe essere posteriore
+            const rearCamera = videoDevices.find(device => 
+              device.label.toLowerCase().includes('back') || 
+              device.label.toLowerCase().includes('rear') || 
+              device.label.toLowerCase().includes('environment') ||
+              device.label.toLowerCase().includes('posteriore')
+            );
+            
+            if (rearCamera) {
+              console.log('Found rear camera:', rearCamera.label);
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                  ...videoConstraints,
+                  deviceId: { exact: rearCamera.deviceId }
+                }
+              });
+              cameraType = 'rear (by deviceId)';
+              console.log('✅ Successfully using rear camera by deviceId');
+            } else {
+              // Se non trova una fotocamera posteriore specifica, prova con environment senza exact
+              try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                  video: {
+                    ...videoConstraints,
+                    facingMode: 'environment'
+                  }
+                });
+                cameraType = 'environment (non-exact)';
+                console.log('✅ Successfully using environment camera (non-exact)');
+              } catch (envNonExactError) {
+                console.log('❌ All rear camera attempts failed, using front camera as fallback');
+                stream = await navigator.mediaDevices.getUserMedia({
+                  video: {
+                    ...videoConstraints,
+                    facingMode: 'user'
+                  }
+                });
+                cameraType = 'user (front) - fallback';
+                console.log('⚠️ Using front camera as fallback');
+              }
+            }
+          } catch (enumError) {
+            console.log('❌ Device enumeration failed, using front camera');
             stream = await navigator.mediaDevices.getUserMedia({
               video: {
                 ...videoConstraints,
                 facingMode: 'user'
               }
             });
-            cameraType = 'user (front)';
-            console.log('⚠️ Using user camera (front) - rear camera not available');
-          } catch (userError) {
-            console.log('❌ User camera failed, trying default camera...');
-            // Se anche user fallisce, prova senza specificare facingMode
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: videoConstraints
-            });
-            cameraType = 'default';
-            console.log('⚠️ Using default camera - no specific facing mode');
+            cameraType = 'user (front) - enum failed';
+            console.log('⚠️ Using front camera due to enumeration failure');
           }
         }
       } else {
@@ -263,9 +303,9 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
       top: isMobile ? 0 : 'auto',
       left: isMobile ? 0 : 'auto',
       right: isMobile ? 0 : 'auto',
-      bottom: isMobile ? 0 : 'auto',
+      bottom: isMobile ? '80px' : 'auto', // Lascia spazio per l'header in basso
       width: isMobile ? '100vw' : '100%',
-      height: isMobile ? '100vh' : 'auto',
+      height: isMobile ? 'calc(100vh - 80px)' : 'auto', // Altezza meno l'header
       zIndex: isMobile ? 9999 : 'auto',
       backgroundColor: isMobile ? 'black' : 'transparent',
       margin: isMobile ? 0 : 'auto',
@@ -277,7 +317,7 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
       {/* Camera Preview - Fullscreen su mobile */}
       <div className={`relative ${isMobile ? 'w-full h-full' : 'w-full max-w-full box-border'}`} style={{
         width: isMobile ? '100vw' : '100%',
-        height: isMobile ? '100vh' : 'auto',
+        height: isMobile ? 'calc(100vh - 80px)' : 'auto',
         margin: isMobile ? 0 : 'auto',
         padding: isMobile ? 0 : 'auto',
         border: isMobile ? 'none' : 'auto',
@@ -293,13 +333,13 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
           style={{
             objectFit: 'cover',
             width: isMobile ? '100vw' : '100%',
-            height: isMobile ? '100vh' : 'auto',
+            height: isMobile ? 'calc(100vh - 80px)' : 'auto',
             margin: isMobile ? 0 : 'auto',
             padding: isMobile ? 0 : 'auto',
             border: isMobile ? 'none' : 'auto',
             borderRadius: isMobile ? 0 : 'auto',
             paddingTop: isMobile ? 'env(safe-area-inset-top)' : '0',
-            paddingBottom: isMobile ? 'env(safe-area-inset-bottom)' : '0',
+            paddingBottom: isMobile ? '0' : '0', // Rimuovi padding bottom per l'header
             paddingLeft: isMobile ? 'env(safe-area-inset-left)' : '0',
             paddingRight: isMobile ? 'env(safe-area-inset-right)' : '0',
           }}
@@ -355,7 +395,7 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
         {/* Istruzioni */}
         <div className={`absolute ${isMobile ? 'bottom-4 left-4 right-4' : 'bottom-1 left-2 right-2'} text-center z-30`}
              style={{ 
-               bottom: isMobile ? 'calc(1rem + env(safe-area-inset-bottom))' : '0.25rem'
+               bottom: isMobile ? '1rem' : '0.25rem' // Posizione fissa dal basso
              }}>
           <p className="text-sm text-white bg-black/50 rounded px-3 py-2">
             {isMobile ? 'Inquadra il barcode e mantieni fermo il dispositivo' : 'Inquadra il barcode nel riquadro'}
