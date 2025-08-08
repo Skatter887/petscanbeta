@@ -27,6 +27,7 @@ export function useProductAnalysis() {
   const [lastSearchedEan, setLastSearchedEan] = useState<string>('');
 
   const handleProductAnalysis = async (input: string) => {
+    console.log('🔍 useProductAnalysis: Starting analysis for input:', input);
     setIsLoading(true);
     setAnalysisResult(null);
     setSearchResults([]);
@@ -34,9 +35,19 @@ export function useProductAnalysis() {
     setShowAddProductModal(false);
     
     try {
+      console.log('⏱️ Adding delay before analysis...');
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      console.log('🔍 Calling analyzeProduct with:', input);
       const { product, analysis } = await analyzeProduct(input);
+      
+      console.log('📋 Analysis result:', { 
+        product: product ? { title: product.title, brand: product.brand, ean: product.Ean } : null, 
+        analysis: analysis ? { score: analysis.overallScore, status: analysis.evaluationStatus } : null 
+      });
+      
       if (product && analysis) {
+        console.log('✅ Product found, creating analysis result');
         const result: ProductAnalysisResult = {
           productName: product.title,
           brand: product.brand,
@@ -48,22 +59,28 @@ export function useProductAnalysis() {
           recommendation: analysis.recommendation,
           imageUrl: product.images || ''
         };
+        console.log('📊 Setting analysis result:', result);
         setAnalysisResult(result);
       } else {
+        console.log('❌ Product not found by barcode, trying name search...');
         const results = await searchProductByName(input);
+        console.log('🔍 Name search results:', results.length);
+        
         if (results.length > 0) {
+          console.log('✅ Found products by name, setting search results');
           setSearchResults(results.slice(0, 5));
         } else {
-          // Prodotto non trovato - mostra il modal
+          console.log('❌ No products found, showing not found modal');
           setLastSearchedEan(input);
           setShowProductNotFoundModal(true);
         }
       }
     } catch (e) {
-      // In caso di errore, mostra comunque il modal
+      console.error('💥 Error in product analysis:', e);
       setLastSearchedEan(input);
       setShowProductNotFoundModal(true);
     } finally {
+      console.log('🏁 Analysis complete, setting loading to false');
       setIsLoading(false);
     }
   };

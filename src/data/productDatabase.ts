@@ -95,13 +95,29 @@ export const analyzeProduct = async (barcode: string): Promise<{
     recommendation: string;
   } | null;
 }> => {
+  console.log('🗄️ analyzeProduct: Looking for barcode:', barcode);
   await ensureDatabaseLoaded();
   
-  const product = productDatabase.find(p => p.Ean.toString() === barcode);
+  console.log('📊 Database loaded, total products:', productDatabase.length);
+  console.log('🔍 Searching for EAN:', barcode);
+  
+  // Prova diverse varianti del barcode
+  const product = productDatabase.find(p => {
+    const ean = p.Ean.toString();
+    const match = ean === barcode || ean === barcode.toString();
+    if (match) {
+      console.log('✅ Found product match:', { ean: p.Ean, title: p.title, brand: p.brand });
+    }
+    return match;
+  });
   
   if (!product) {
+    console.log('❌ No product found for barcode:', barcode);
+    console.log('📋 First 5 products in database:', productDatabase.slice(0, 5).map(p => ({ ean: p.Ean, title: p.title })));
     return { product: null, analysis: null };
   }
+  
+  console.log('✅ Product found:', { ean: product.Ean, title: product.title, brand: product.brand });
 
   const transformedProduct = transformProduct(product);
 

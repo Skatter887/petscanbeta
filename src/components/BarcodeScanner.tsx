@@ -353,7 +353,32 @@ const BarcodeScanner = ({
               if (navigator.vibrate) navigator.vibrate(200);
               const text = result.getText();
               console.log('✅ Barcode scanned:', text);
-              stopScanning();
+              console.log('🔄 Stopping scanner and calling onScan with:', text);
+              
+              // Ferma immediatamente tutto
+              try {
+                controlsRef.current?.stop?.();
+                controlsRef.current = null;
+              } catch (e) {
+                console.warn('Error stopping controls:', e);
+              }
+              
+              // Ferma la camera
+              const vid = videoRef.current;
+              if (vid && vid.srcObject) {
+                console.log('📹 Stopping camera stream');
+                (vid.srcObject as MediaStream).getTracks().forEach((t) => {
+                  console.log('🛑 Stopping track:', t.kind, t.label);
+                  t.stop();
+                });
+                vid.srcObject = null;
+              }
+              
+              setIsScanning(false);
+              onScannerStateChange?.(false);
+              
+              // Chiama la callback con il barcode
+              console.log('📞 Calling onScan callback');
               onScan(text);
             } else if (err && !(err instanceof NotFoundException)) {
               console.warn('Scanning error:', err);
@@ -381,19 +406,34 @@ const BarcodeScanner = ({
   };
 
   const stopScanning = () => {
+    console.log('🛑 stopScanning called');
     setIsScanning(false);
     scannedRef.current = false;
 
     try {
-      controlsRef.current?.stop?.();
-    } catch {}
+      if (controlsRef.current) {
+        console.log('🛑 Stopping ZXing controls');
+        controlsRef.current.stop?.();
+      }
+    } catch (e) {
+      console.warn('Error stopping ZXing controls:', e);
+    }
     controlsRef.current = null;
 
     const vid = videoRef.current;
     if (vid && vid.srcObject) {
-      (vid.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
+      console.log('🛑 Stopping video tracks');
+      (vid.srcObject as MediaStream).getTracks().forEach((t) => {
+        console.log('🛑 Stopping track:', t.kind, t.readyState);
+        t.stop();
+      });
       vid.srcObject = null;
+      console.log('✅ Video source cleared');
     }
+    
+    // Notifica che lo scanner non è più attivo
+    onScannerStateChange?.(false);
+    console.log('🔔 Scanner state changed to false');
   };
 
   const handleClose = () => {

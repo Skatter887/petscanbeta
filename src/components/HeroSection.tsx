@@ -564,12 +564,20 @@ const HeroSection = () => {
   };
 
   const handleScan = (barcode: string) => {
+    console.log('🎯 HeroSection handleScan called with barcode:', barcode);
+    console.log('📱 Closing scanner and setting search value');
+    
     setShowScanner(false);
     setSearch(barcode);
     setIsLoading(true);
+    
+    console.log('🔄 Starting product analysis for barcode:', barcode);
     // Scroll al centro della pagina per il loading
     window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
+    
+    // Chiama l'analisi del prodotto
     handleProductAnalysis(barcode);
+    console.log('✅ Product analysis called');
   };
 
   // Funzione per resettare il campo di ricerca
