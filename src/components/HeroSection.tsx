@@ -611,128 +611,100 @@ const HeroSection = () => {
   }, [analysisResult]);
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-between items-center px-2 md:px-4 py-0 md:py-16 pb-0 md:pb-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden hero-section-container" style={{ paddingBottom: analysisResult ? '3rem' : '2rem' }}>
-      {/* Overlay per oscurare il contenuto quando lo scanner è attivo su mobile */}
-      {isMobile && isScannerActive && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-40 flex items-center justify-center">
-          <div className="text-center text-white p-4">
-            <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-              <Camera className="w-8 h-8" />
-            </div>
-            <p className="text-lg font-semibold mb-2">Scanner Attivo</p>
-            <p className="text-sm opacity-90">Inquadra il codice a barre nel riquadro</p>
-          </div>
-        </div>
-      )}
-      {/* Logo PetScan - visibile solo su mobile con safe area support, nascosto quando scanner è attivo */}
-      {!showScanner && (
-        <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.25rem + env(safe-area-inset-top))' : 'calc(1rem + env(safe-area-inset-top))' }}>
-          <img 
-            src="/logo_no_cont.png" 
-            alt="PetScan Logo" 
-            className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200 logo-webapp-lower`}
+    <>
+      {/* Scanner Fullscreen - quando attivo, occupa l'intera schermata */}
+      {showScanner && (
+        <div className="fixed inset-0 z-50 bg-black">
+          <BarcodeScanner
+            onScan={handleScan}
+            onManualEntry={handleScan}
+            isLoading={analysisLoading}
+            onScannerStateChange={setIsScannerActive}
+            onClose={() => setShowScanner(false)}
           />
         </div>
       )}
-
-      {/* Animazione zampette - visibile solo su mobile, nascosta quando scanner è attivo */}
+      
+      {/* Contenuto normale - nascosto quando scanner è attivo */}
       {!showScanner && (
-        <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
-          {pawTrajectory.map((paw, index) => (
-            <AnimatedPawPrint
-              key={index}
-              position={paw.position}
-              delay={paw.delay}
-              color={paw.color}
-              isVisible={isPawAnimationActive && index < pawAnimationStep}
-              side={paw.side}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Zampette decorative pulsanti - visibili solo su mobile/tablet, nascoste quando scanner è attivo */}
-      {!showScanner && (
-        <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
-          <style>{pawAnimations}</style>
-          {generateDecorativePawPositions().map((paw, index) => (
-            <DecorativePawPrint
-              key={`decorative-${index}`}
-              position={{ x: paw.x, y: paw.y }}
-              color={paw.color}
-              size={paw.size}
-              delay={paw.delay}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-center flex-1 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-2' : 'gap-4'} md:gap-8 hero-content-wrapper`} style={{ paddingBottom: analysisResult ? '2rem' : '1rem', paddingLeft: analysisResult ? '0.5rem' : '1rem', paddingRight: analysisResult ? '0.5rem' : '1rem' }}>
-        {/* Hero Content (testo invariato) - nascosto quando scanner è attivo */}
-        {!showScanner && (
-          <div className={`${analysisResult ? 'mt-8' : ''}`}>
-            <HeroContent 
-              onAnalyzeClick={handleAnalyzeClick}
-              onExamplesClick={() => {}}
-              isAnalysisActive={analysisResult !== null}
+        <section className="relative min-h-screen flex flex-col justify-between items-center px-2 md:px-4 py-0 md:py-16 pb-0 md:pb-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden hero-section-container" style={{ paddingBottom: analysisResult ? '3rem' : '2rem' }}>
+          {/* Logo PetScan - visibile solo su mobile con safe area support */}
+          <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.25rem + env(safe-area-inset-top))' : 'calc(1rem + env(safe-area-inset-top))' }}>
+            <img 
+              src="/logo_no_cont.png" 
+              alt="PetScan Logo" 
+              className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200 logo-webapp-lower`}
             />
           </div>
-        )}
-        
-        {/* Barra di ricerca - visibile solo su mobile, espansa quando scanner è attivo */}
-        <div id="scannerizza-form" className={`w-full md:hidden relative ${showScanner ? 'flex-1 flex flex-col justify-center' : ''}`}>
-          <form
-            onSubmit={handleSubmit}
-            className={`w-full max-w-xl mx-auto flex flex-row items-center gap-0 shadow-lg border-2 border-transparent relative overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-3 px-2 backdrop-blur-md min-h-[60px]'}
-              !transition-all !duration-200`}
-            style={{
-              WebkitAppearance: 'none',
-              WebkitTapHighlightColor: 'transparent',
-              touchAction: 'manipulation',
-              boxSizing: 'border-box',
-              willChange: 'transform',
-              zIndex: 10,
-              background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #e8baff, #ffb3f7, #ffb3ba) border-box',
-              backgroundSize: '110% 110%',
-              animation: 'rainbow-border 800s ease-in-out infinite',
-            }}
-          >
-            {/* Scanner icon sinistra */}
-            {!showScanner && (
-              <button
-                type="button"
-                className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-                onClick={() => setShowScanner(true)}
-                aria-label="Scansiona barcode"
-                tabIndex={0}
-                style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+
+          {/* Animazione zampette - visibile solo su mobile */}
+          <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
+            {pawTrajectory.map((paw, index) => (
+              <AnimatedPawPrint
+                key={index}
+                position={paw.position}
+                delay={paw.delay}
+                color={paw.color}
+                isVisible={isPawAnimationActive && index < pawAnimationStep}
+                side={paw.side}
+              />
+            ))}
+          </div>
+
+          {/* Zampette decorative pulsanti - visibili solo su mobile/tablet */}
+          <div className="md:hidden absolute left-0 top-0 w-full h-full pointer-events-none select-none overflow-hidden">
+            <style>{pawAnimations}</style>
+            {generateDecorativePawPositions().map((paw, index) => (
+              <DecorativePawPrint
+                key={`decorative-${index}`}
+                position={{ x: paw.x, y: paw.y }}
+                color={paw.color}
+                size={paw.size}
+                delay={paw.delay}
+              />
+            ))}
+          </div>
+
+          <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-center flex-1 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-2' : 'gap-4'} md:gap-8 hero-content-wrapper`} style={{ paddingBottom: analysisResult ? '2rem' : '1rem', paddingLeft: analysisResult ? '0.5rem' : '1rem', paddingRight: analysisResult ? '0.5rem' : '1rem' }}>
+            {/* Hero Content (testo invariato) */}
+            <div className={`${analysisResult ? 'mt-8' : ''}`}>
+              <HeroContent 
+                onAnalyzeClick={handleAnalyzeClick}
+                onExamplesClick={() => {}}
+                isAnalysisActive={analysisResult !== null}
+              />
+            </div>
+            
+            {/* Barra di ricerca */}
+            <div id="scannerizza-form" className="w-full md:hidden relative">
+              <form
+                onSubmit={handleSubmit}
+                className={`w-full max-w-xl mx-auto flex flex-row items-center gap-0 shadow-lg border-2 border-transparent relative overflow-visible bg-white/90 rounded-full py-3 px-2 backdrop-blur-md min-h-[60px] !transition-all !duration-200`}
+                style={{
+                  WebkitAppearance: 'none',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  boxSizing: 'border-box',
+                  willChange: 'transform',
+                  zIndex: 10,
+                  background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #e8baff, #ffb3f7, #ffb3ba) border-box',
+                  backgroundSize: '110% 110%',
+                  animation: 'rainbow-border 800s ease-in-out infinite',
+                }}
               >
-                <ScanLine className="w-7 h-7" style={{ display: 'block' }} />
-              </button>
-            )}
-            {/* Inline BarcodeScanner o input normale */}
-            <div className="flex-1 flex items-center justify-center min-w-0">
-              {showScanner ? (
-                <div className="w-full flex items-center justify-center">
-                                  <BarcodeScanner
-                  onScan={handleScan}
-                  onManualEntry={handleScan}
-                  isLoading={analysisLoading}
-                  onScannerStateChange={setIsScannerActive}
-                  onClose={() => setShowScanner(false)}
-                />
-                  <button
-                    type="button"
-                    className="ml-2 text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
-                    onClick={() => setShowScanner(false)}
-                    aria-label="Chiudi scanner"
-                    tabIndex={0}
-                    style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
+                {/* Scanner icon sinistra */}
+                <button
+                  type="button"
+                  className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  onClick={() => setShowScanner(true)}
+                  aria-label="Scansiona barcode"
+                  tabIndex={0}
+                  style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                >
+                  <ScanLine className="w-7 h-7" style={{ display: 'block' }} />
+                </button>
+                
+                {/* Input di ricerca */}
                 <input
                   type="text"
                   inputMode="text"
@@ -770,276 +742,221 @@ const HeroSection = () => {
                     e.target.style.fontSize = '1.1rem';
                   }}
                 />
-              )}
-            </div>
-            {/* Search icon destra */}
-            {!showScanner && (
-              <button
-                type="submit"
-                className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                disabled={analysisLoading || !search.trim()}
-                aria-label="Cerca"
-                tabIndex={0}
-                style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-              >
-                <Search className="w-7 h-7" style={{ display: 'block' }} />
-              </button>
-            )}
-            
-          </form>
-          
-          {/* Autocomplete suggestions */}
-          {showSuggestions && filteredSuggestions.length > 0 && !showScanner && (
-            <div 
-              ref={suggestionsRef}
-              className="w-full max-w-xl mx-auto bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64"
-            >
-              {filteredSuggestions.map((suggestion, idx) => (
+                
+                {/* Search icon destra */}
                 <button
-                  key={idx}
-                  type="button"
-                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 transition-colors flex flex-col"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Per l'analisi usa sempre l'EAN
-                    const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
-                    setSearch(suggestion.value);
-                    setIsLoading(true);
-                    // Scroll al centro della pagina per il loading
-                    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
-                    handleProductAnalysis(searchValue); // Chiamo l'analisi prima
-                    setShowSuggestions(false); // Poi nascondo i suggerimenti
-                  }}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Per l'analisi usa sempre l'EAN
-                    const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
-                    setSearch(suggestion.value);
-                    setIsLoading(true);
-                    // Scroll al centro della pagina per il loading
-                    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
-                    handleProductAnalysis(searchValue); // Chiamo l'analisi prima
-                    setShowSuggestions(false); // Poi nascondo i suggerimenti
-                  }}
+                  type="submit"
+                  className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  disabled={analysisLoading || !search.trim()}
+                  aria-label="Cerca"
                   tabIndex={0}
-                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                  style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
                 >
-                  <div className="font-medium text-gray-900">
-                    {suggestion.type === 'ean' ? `EAN: ${suggestion.value}` : suggestion.label}
-                  </div>
-                  {suggestion.type !== 'ean' && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      {suggestion.brand} • EAN: {suggestion.ean}
-                    </div>
-                  )}
+                  <Search className="w-7 h-7" style={{ display: 'block' }} />
                 </button>
-              ))}
-            </div>
-          )}
-          
-        </div>
-
-        {/* Statistiche centrate */}
-        <div className="w-full flex justify-center md:mt-8">
-          <HeroStats />
-        </div>
-
-        {/* Barra di ricerca desktop - visibile solo su desktop */}
-        <form
-          onSubmit={handleSubmit}
-          className={`hidden md:flex w-full max-w-lg mx-auto flex-row items-center gap-0 mt-8 mb-8 shadow-lg border border-white/40 relative overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-5 px-6 backdrop-blur-md min-h-[64px]'}
-            !transition-all !duration-200`}
-          style={{
-            WebkitAppearance: 'none',
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation',
-            boxSizing: 'border-box',
-            willChange: 'transform',
-            zIndex: 10,
-          }}
-        >
-          {/* Scanner icon sinistra */}
-          {!showScanner && (
-            <button
-              type="button"
-              className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-3 focus:outline-none focus:ring-2 focus:ring-green-400"
-              onClick={() => setShowScanner(true)}
-              aria-label="Scansiona barcode"
-              tabIndex={0}
-              style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-            >
-              <ScanLine className="w-8 h-8" style={{ display: 'block' }} />
-            </button>
-          )}
-          {/* Inline BarcodeScanner o input normale */}
-          <div className="flex-1 flex items-center justify-center min-w-0">
-            {showScanner ? (
-              <div className="w-full flex items-center justify-center">
-                <BarcodeScanner
-                  onScan={handleScan}
-                  onManualEntry={handleScan}
-                  isLoading={analysisLoading}
-                  onScannerStateChange={setIsScannerActive}
-                  onClose={() => setShowScanner(false)}
-                />
-                <button
-                  type="button"
-                  className="ml-2 text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
-                  onClick={() => setShowScanner(false)}
-                  aria-label="Chiudi scanner"
-                  tabIndex={0}
-                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-                >
-                  ×
-                </button>
-              </div>
-            ) : (
-              <input
-                type="text"
-                inputMode="text"
-                className="flex-1 bg-transparent outline-none px-4 py-2 text-2xl rounded-full placeholder-gray-400 min-w-0"
-                placeholder="Inserisci barcode o nome prodotto"
-                value={search}
-                onChange={e => {
-                  setSearch(e.target.value);
-                  setShowSuggestions(true);
-                }}
-                disabled={analysisLoading}
-                autoComplete="off"
-                style={{
-                  WebkitAppearance: 'none',
-                  fontSize: '1.1rem',
-                  lineHeight: 1.2,
-                  border: 'none',
-                  outline: 'none',
-                  boxShadow: 'none',
-                  background: 'transparent',
-                  width: '100%',
-                  minWidth: 0,
-                  padding: '0.7em 0.5em',
-                  borderRadius: '9999px',
-                  MozOsxFontSmoothing: 'grayscale',
-                  WebkitFontSmoothing: 'antialiased',
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation',
-                }}
-                onFocus={e => {
-                  // Previene zoom su iOS
-                  e.target.style.fontSize = '16px';
-                }}
-                onBlur={e => {
-                  e.target.style.fontSize = '1.1rem';
-                }}
-              />
-            )}
-          </div>
-          {/* Search icon destra */}
-          {!showScanner && (
-            <button
-              type="submit"
-              className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
-              disabled={analysisLoading || !search.trim()}
-              aria-label="Cerca"
-              tabIndex={0}
-              style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-            >
-              <Search className="w-8 h-8" style={{ display: 'block' }} />
-            </button>
-          )}
-          {/* Autocomplete suggestions */}
-          {showSuggestions && filteredSuggestions.length > 0 && !showScanner && (
-            <div 
-              ref={suggestionsRef} 
-              className="absolute left-0 top-full w-full max-w-lg bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64"
-            >
-              {filteredSuggestions.map((suggestion, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 transition-colors flex flex-col"
-                  onClick={() => {
-                    // Per l'analisi usa sempre l'EAN
-                    const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
-                    setSearch(suggestion.value);
-                    setIsLoading(true);
-                    // Scroll al centro della pagina per il loading
-                    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
-                    handleProductAnalysis(searchValue); // Chiamo l'analisi prima
-                    setShowSuggestions(false); // Poi nascondo i suggerimenti
-                  }}
-                  tabIndex={0}
-                  style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-                >
-                  <div className="font-medium text-gray-900">
-                    {suggestion.type === 'ean' ? `EAN: ${suggestion.value}` : suggestion.label}
-                  </div>
-                  {suggestion.type !== 'ean' && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      {suggestion.brand} • EAN: {suggestion.ean}
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </form>
-
-        {/* Loading Component */}
-        {(isLoading || analysisLoading) && (
-          <div className="w-full flex flex-col items-center justify-center py-12">
-            <style>{pawAnimations}</style>
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="relative">
-                  <div className="w-16 h-16 border-4 border-green-200 border-t-green-500 rounded-full animate-spin-slow"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl">🐾</span>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    Analizzando il prodotto...
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Stiamo valutando la qualità nutrizionale
-                  </p>
-                </div>
-              </div>
+              </form>
             </div>
           </div>
-        )}
+        </section>
+      )}
 
-        {/* Risultato analisi */}
-        {analysisResult && (
-          <div className="w-full mt-16" data-analysis-card>
-            <ProductEvaluationCard result={analysisResult} onResetSearch={resetSearchField} />
-          </div>
-        )}
-        {/* Risultati ricerca multipli */}
-        {searchResults.length > 0 && !analysisLoading && (
-          <div className="w-full mt-8 space-y-4">
-            <div className="text-center text-lg font-semibold text-gray-700">Seleziona un prodotto:</div>
-            <div className="flex flex-wrap justify-center gap-4">
-              {searchResults.map((product) => (
-                <button
-                  key={product.Ean}
-                  className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:scale-105 transition-transform border border-gray-100"
-                  onClick={() => handleProductSelect(product.Ean)}
-                >
-                  {product.images && (
-                    <img src={typeof product.images === 'string' ? product.images.split(',')[0].trim() : ''} alt={product.title} className="w-16 h-16 object-cover rounded-full mb-2" />
-                  )}
-                  <div className="font-bold text-sm text-gray-800">{product.title}</div>
-                  <div className="text-xs text-gray-500">{product.brand}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
+      {/* Statistiche centrate */}
+      <div className="w-full flex justify-center md:mt-8">
+        <HeroStats />
       </div>
+
+      {/* Barra di ricerca desktop - visibile solo su desktop */}
+      <form
+        onSubmit={handleSubmit}
+        className={`hidden md:flex w-full max-w-lg mx-auto flex-row items-center gap-0 mt-8 mb-8 shadow-lg border border-white/40 relative overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-5 px-6 backdrop-blur-md min-h-[64px]'}
+          !transition-all !duration-200`}
+        style={{
+          WebkitAppearance: 'none',
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation',
+          boxSizing: 'border-box',
+          willChange: 'transform',
+          zIndex: 10,
+        }}
+      >
+        {/* Scanner icon sinistra */}
+        {!showScanner && (
+          <button
+            type="button"
+            className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-3 focus:outline-none focus:ring-2 focus:ring-green-400"
+            onClick={() => setShowScanner(true)}
+            aria-label="Scansiona barcode"
+            tabIndex={0}
+            style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+          >
+            <ScanLine className="w-8 h-8" style={{ display: 'block' }} />
+          </button>
+        )}
+        {/* Inline BarcodeScanner o input normale */}
+        <div className="flex-1 flex items-center justify-center min-w-0">
+          {showScanner ? (
+            <div className="w-full flex items-center justify-center">
+              <BarcodeScanner
+                onScan={handleScan}
+                onManualEntry={handleScan}
+                isLoading={analysisLoading}
+                onScannerStateChange={setIsScannerActive}
+                onClose={() => setShowScanner(false)}
+              />
+              <button
+                type="button"
+                className="ml-2 text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
+                onClick={() => setShowScanner(false)}
+                aria-label="Chiudi scanner"
+                tabIndex={0}
+                style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <input
+              type="text"
+              inputMode="text"
+              className="flex-1 bg-transparent outline-none px-4 py-2 text-2xl rounded-full placeholder-gray-400 min-w-0"
+              placeholder="Inserisci barcode o nome prodotto"
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value);
+                setShowSuggestions(true);
+              }}
+              disabled={analysisLoading}
+              autoComplete="off"
+              style={{
+                WebkitAppearance: 'none',
+                fontSize: '1.1rem',
+                lineHeight: 1.2,
+                border: 'none',
+                outline: 'none',
+                boxShadow: 'none',
+                background: 'transparent',
+                width: '100%',
+                minWidth: 0,
+                padding: '0.7em 0.5em',
+                borderRadius: '9999px',
+                MozOsxFontSmoothing: 'grayscale',
+                WebkitFontSmoothing: 'antialiased',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+              }}
+              onFocus={e => {
+                // Previene zoom su iOS
+                e.target.style.fontSize = '16px';
+              }}
+              onBlur={e => {
+                e.target.style.fontSize = '1.1rem';
+              }}
+            />
+          )}
+        </div>
+        {/* Search icon destra */}
+        {!showScanner && (
+          <button
+            type="submit"
+            className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            disabled={analysisLoading || !search.trim()}
+            aria-label="Cerca"
+            tabIndex={0}
+            style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+          >
+            <Search className="w-8 h-8" style={{ display: 'block' }} />
+          </button>
+        )}
+        {/* Autocomplete suggestions */}
+        {showSuggestions && filteredSuggestions.length > 0 && !showScanner && (
+          <div 
+            ref={suggestionsRef} 
+            className="absolute left-0 top-full w-full max-w-lg bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64"
+          >
+            {filteredSuggestions.map((suggestion, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 transition-colors flex flex-col"
+                onClick={() => {
+                  // Per l'analisi usa sempre l'EAN
+                  const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
+                  setSearch(suggestion.value);
+                  setIsLoading(true);
+                  // Scroll al centro della pagina per il loading
+                  window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
+                  handleProductAnalysis(searchValue); // Chiamo l'analisi prima
+                  setShowSuggestions(false); // Poi nascondo i suggerimenti
+                }}
+                tabIndex={0}
+                style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+              >
+                <div className="font-medium text-gray-900">
+                  {suggestion.type === 'ean' ? `EAN: ${suggestion.value}` : suggestion.label}
+                </div>
+                {suggestion.type !== 'ean' && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    {suggestion.brand} • EAN: {suggestion.ean}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </form>
+
+      {/* Loading Component */}
+      {(isLoading || analysisLoading) && (
+        <div className="w-full flex flex-col items-center justify-center py-12">
+          <style>{pawAnimations}</style>
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-green-200 border-t-green-500 rounded-full animate-spin-slow"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl">🐾</span>
+                </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  Analizzando il prodotto...
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Stiamo valutando la qualità nutrizionale
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Risultato analisi */}
+      {analysisResult && (
+        <div className="w-full mt-16" data-analysis-card>
+          <ProductEvaluationCard result={analysisResult} onResetSearch={resetSearchField} />
+        </div>
+      )}
+      {/* Risultati ricerca multipli */}
+      {searchResults.length > 0 && !analysisLoading && (
+        <div className="w-full mt-8 space-y-4">
+          <div className="text-center text-lg font-semibold text-gray-700">Seleziona un prodotto:</div>
+          <div className="flex flex-wrap justify-center gap-4">
+            {searchResults.map((product) => (
+              <button
+                key={product.Ean}
+                className="bg-white rounded-xl shadow-md p-4 flex flex-col items-center hover:scale-105 transition-transform border border-gray-100"
+                onClick={() => handleProductSelect(product.Ean)}
+              >
+                {product.images && (
+                  <img src={typeof product.images === 'string' ? product.images.split(',')[0].trim() : ''} alt={product.title} className="w-16 h-16 object-cover rounded-full mb-2" />
+                )}
+                <div className="font-bold text-sm text-gray-800">{product.title}</div>
+                <div className="text-xs text-gray-500">{product.brand}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modali per prodotto non trovato */}
       <ProductNotFoundModal
@@ -1054,7 +971,7 @@ const HeroSection = () => {
         onClose={handleCloseAddProductModalWrapper}
         eanCode={lastSearchedEan}
       />
-    </section>
+    </>
   );
 };
 
