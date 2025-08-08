@@ -45,61 +45,77 @@ const BarcodeScanner = ({
     console.log('🔍 Searching for best rear camera...');
     console.log('Available devices:', videoDevices.map(d => ({ label: d.label, deviceId: d.deviceId })));
     
-    // Criteri di priorità per fotocamera posteriore
-    const rearCameraCandidates = videoDevices.filter((device) => {
+    // SUPER AGGRESSIVO: Prima cerca dispositivi che NON sono frontali
+    const nonFrontCameras = videoDevices.filter((device) => {
       const label = device.label.toLowerCase();
-      return (
-        label.includes('ultra') ||
-        label.includes('wide') ||
-        label.includes('main') ||
-        label.includes('primary') ||
-        label.includes('back') ||
-        label.includes('rear') ||
-        label.includes('environment') ||
-        label.includes('posteriore') ||
-        label.includes('camera 2') ||
-        label.includes('camera 1') ||
-        label.includes('camera 3') ||
-        label.includes('telephoto') ||
-        label.includes('ultra wide') ||
-        label.includes('wide angle') ||
-        label.includes('main camera') ||
-        label.includes('primary camera')
-      );
+      return !label.includes('front') && 
+             !label.includes('user') && 
+             !label.includes('selfie') && 
+             !label.includes('facetime');
     });
 
-    if (rearCameraCandidates.length > 0) {
-      // Sistema di punteggio per trovare la migliore fotocamera posteriore
-      const score = (label: string) => {
-        const l = label.toLowerCase();
-        if (l.includes('ultra wide')) return 15;
-        if (l.includes('ultra')) return 14;
-        if (l.includes('wide angle')) return 13;
-        if (l.includes('wide')) return 12;
-        if (l.includes('main camera')) return 11;
-        if (l.includes('primary camera')) return 10;
-        if (l.includes('main')) return 9;
-        if (l.includes('primary')) return 8;
-        if (l.includes('back')) return 7;
-        if (l.includes('rear')) return 6;
-        if (l.includes('environment')) return 5;
-        if (l.includes('posteriore')) return 4;
-        if (l.includes('camera 2')) return 3;
-        if (l.includes('camera 1')) return 2;
-        if (l.includes('telephoto')) return 1;
-        return 0;
-      };
-      
-      // Ordina per punteggio e restituisci la migliore
-      rearCameraCandidates.sort((a, b) => score(b.label) - score(a.label));
-      console.log('✅ Found rear camera candidates:', rearCameraCandidates.map(d => ({ label: d.label, score: score(d.label) })));
-      return rearCameraCandidates[0];
+    if (nonFrontCameras.length > 0) {
+      // Se ci sono camera non-frontali, cerca quella posteriore
+      const rearCameraCandidates = nonFrontCameras.filter((device) => {
+        const label = device.label.toLowerCase();
+        return (
+          label.includes('ultra') ||
+          label.includes('wide') ||
+          label.includes('main') ||
+          label.includes('primary') ||
+          label.includes('back') ||
+          label.includes('rear') ||
+          label.includes('environment') ||
+          label.includes('posteriore') ||
+          label.includes('camera 2') ||
+          label.includes('camera 1') ||
+          label.includes('camera 3') ||
+          label.includes('telephoto') ||
+          label.includes('ultra wide') ||
+          label.includes('wide angle') ||
+          label.includes('main camera') ||
+          label.includes('primary camera')
+        );
+      });
+
+      if (rearCameraCandidates.length > 0) {
+        // Sistema di punteggio per trovare la migliore fotocamera posteriore
+        const score = (label: string) => {
+          const l = label.toLowerCase();
+          if (l.includes('ultra wide')) return 20;
+          if (l.includes('main camera')) return 19;
+          if (l.includes('primary camera')) return 18;
+          if (l.includes('wide angle')) return 17;
+          if (l.includes('ultra')) return 16;
+          if (l.includes('wide')) return 15;
+          if (l.includes('main')) return 14;
+          if (l.includes('primary')) return 13;
+          if (l.includes('back')) return 12;
+          if (l.includes('rear')) return 11;
+          if (l.includes('environment')) return 10;
+          if (l.includes('posteriore')) return 9;
+          if (l.includes('camera 2')) return 8;
+          if (l.includes('camera 1')) return 7;
+          if (l.includes('camera 3')) return 6;
+          if (l.includes('telephoto')) return 5;
+          return 3; // Qualsiasi altro dispositivo non-frontale
+        };
+        
+        // Ordina per punteggio e restituisci la migliore
+        rearCameraCandidates.sort((a, b) => score(b.label) - score(a.label));
+        console.log('✅ Found rear camera candidates:', rearCameraCandidates.map(d => ({ label: d.label, score: score(d.label) })));
+        return rearCameraCandidates[0];
+      } else {
+        // Se non trova candidati specifici ma ci sono camera non-frontali, usa la prima
+        console.log('⚠️ Using first non-front camera');
+        return nonFrontCameras[0];
+      }
     }
 
-    // Se non trova candidati specifici, prova con il secondo dispositivo
+    // Ultima risorsa: prova con il dispositivo che NON è il primo (spesso il primo è frontale)
     if (videoDevices.length > 1) {
-      console.log('⚠️ No specific rear camera found, using second device');
-      return videoDevices[1];
+      console.log('⚠️ Using last device (avoiding first which is usually front)');
+      return videoDevices[videoDevices.length - 1];
     }
     
     return null;
@@ -155,7 +171,39 @@ const BarcodeScanner = ({
         
         console.log(`📱 Device: iOS=${isiOS}, Safari=${safari}`);
 
-        // STRATEGIA 1: Environment exact (più aggressivo per iOS)
+        // STRATEGIA SUPER AGGRESSIVA: Enumera PRIMA i dispositivi per forzare il device posteriore
+        if (!cameraFound) {
+          try {
+            console.log('🔄 STRATEGIA SUPER AGGRESSIVA: Device enumeration FIRST');
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter((d) => d.kind === 'videoinput');
+            console.log('📋 ALL Available devices:', videoDevices.map((d, i) => ({ index: i, label: d.label, deviceId: d.deviceId })));
+            
+            const rear = await getBestRearCamera(videoDevices);
+            if (rear) {
+              console.log('🎯 FORCING REAR CAMERA:', rear.label, rear.deviceId);
+              
+              // FORZA deviceId specifico senza facingMode per evitare conflitti
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                  deviceId: { exact: rear.deviceId },
+                  width: { ideal: 1920, min: 1280 },
+                  height: { ideal: 1080, min: 720 },
+                  frameRate: { ideal: 30, min: 15 }
+                }
+              });
+              cameraFound = true;
+              selectedDeviceIdRef.current = rear.deviceId;
+              console.log('✅ SUCCESS: Using specific rear camera device');
+            } else {
+              console.log('❌ No rear camera found in device enumeration');
+            }
+          } catch (error) {
+            console.log('❌ Device enumeration strategy failed:', error);
+          }
+        }
+
+        // STRATEGIA 1: Environment exact (più aggressivo per iOS) - SOLO se device enumeration fallisce
         if (!cameraFound) {
           try {
             console.log('🔄 Tentativo 1: Environment exact (rear camera)');
@@ -251,16 +299,16 @@ const BarcodeScanner = ({
           }
         }
 
-        // STRATEGIA 5: iOS Safari minimal constraints
+        // STRATEGIA 5: iOS Safari FORCE rear camera with multiple attempts
         if (!cameraFound && isiOS && safari) {
+          // Prova 5A: Safari con constraints minimi
           try {
-            console.log('🔄 Tentativo 5: iOS Safari minimal constraints');
+            console.log('🔄 Tentativo 5A: iOS Safari minimal constraints');
             stream = await navigator.mediaDevices.getUserMedia({
               video: {
                 facingMode: 'environment',
                 width: { ideal: 1280, min: 640 },
-                height: { ideal: 720, min: 480 },
-                frameRate: { ideal: 30, min: 15 }
+                height: { ideal: 720, min: 480 }
               }
             });
             cameraFound = true;
@@ -269,6 +317,62 @@ const BarcodeScanner = ({
             console.log('✅ Successfully using iOS Safari minimal camera');
           } catch (error) {
             console.log('❌ iOS Safari minimal constraints failed:', error);
+          }
+
+          // Prova 5B: Safari con SOLO facingMode
+          if (!cameraFound) {
+            try {
+              console.log('🔄 Tentativo 5B: iOS Safari ONLY facingMode');
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+              });
+              cameraFound = true;
+              const track = stream.getVideoTracks()[0];
+              selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
+              console.log('✅ Successfully using iOS Safari only facingMode');
+            } catch (error) {
+              console.log('❌ iOS Safari only facingMode failed:', error);
+            }
+          }
+
+          // Prova 5C: Safari senza constraints (poi switch)
+          if (!cameraFound) {
+            try {
+              console.log('🔄 Tentativo 5C: iOS Safari no constraints');
+              stream = await navigator.mediaDevices.getUserMedia({ video: true });
+              
+              // Verifica se è frontale e prova a cambiare
+              const track = stream.getVideoTracks()[0];
+              const settings = track.getSettings();
+              console.log('Current camera settings:', settings);
+              
+              if (settings.facingMode === 'user') {
+                console.log('Got front camera, stopping and retrying...');
+                stream.getTracks().forEach(t => t.stop());
+                
+                // Prova a ottenere l'altro dispositivo
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                if (videoDevices.length > 1) {
+                  const otherDevice = videoDevices.find(d => d.deviceId !== settings.deviceId);
+                  if (otherDevice) {
+                    console.log('Trying other device:', otherDevice.label);
+                    stream = await navigator.mediaDevices.getUserMedia({
+                      video: { deviceId: { exact: otherDevice.deviceId } }
+                    });
+                    cameraFound = true;
+                    selectedDeviceIdRef.current = otherDevice.deviceId;
+                    console.log('✅ Successfully switched to other camera');
+                  }
+                }
+              } else {
+                cameraFound = true;
+                selectedDeviceIdRef.current = settings.deviceId;
+                console.log('✅ Successfully using no-constraint camera');
+              }
+            } catch (error) {
+              console.log('❌ iOS Safari no constraints failed:', error);
+            }
           }
         }
 
@@ -479,17 +583,6 @@ const BarcodeScanner = ({
           className={`absolute ${isMobile ? 'top-4 right-4' : 'top-2 right-2'} z-30 flex gap-2`}
           style={{ top: isMobile ? 'calc(1rem + env(safe-area-inset-top))' : '0.5rem' }}
         >
-          <Button
-            onClick={() => {
-              stopScanning();
-              setTimeout(() => startScanning(), 400);
-            }}
-            variant="secondary"
-            size="sm"
-            className="rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/30"
-          >
-            <Camera className="w-4 h-4" />
-          </Button>
           <Button onClick={handleClose} variant="destructive" size="sm" className="rounded-full">
             <X className="w-4 h-4" />
           </Button>
