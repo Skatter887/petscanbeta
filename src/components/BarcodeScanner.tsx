@@ -161,11 +161,10 @@ const BarcodeScanner = ({
             console.log('🔄 Tentativo 1: Environment exact (rear camera)');
             stream = await navigator.mediaDevices.getUserMedia({
               video: { 
-                ...common, 
                 facingMode: { exact: 'environment' },
-                // Forza constraints specifici per iOS
                 width: { ideal: 1920, min: 1280 },
-                height: { ideal: 1080, min: 720 }
+                height: { ideal: 1080, min: 720 },
+                frameRate: { ideal: 30, min: 15 }
               }
             });
             cameraFound = true;
@@ -190,11 +189,10 @@ const BarcodeScanner = ({
               console.log('Found rear camera:', rear.label);
               stream = await navigator.mediaDevices.getUserMedia({
                 video: { 
-                  ...common, 
                   deviceId: { exact: rear.deviceId },
-                  // Forza constraints per iOS
                   width: { ideal: 1920, min: 1280 },
-                  height: { ideal: 1080, min: 720 }
+                  height: { ideal: 1080, min: 720 },
+                  frameRate: { ideal: 30, min: 15 }
                 }
               });
               cameraFound = true;
@@ -212,11 +210,10 @@ const BarcodeScanner = ({
             console.log('🔄 Tentativo 3: Environment non-exact');
             stream = await navigator.mediaDevices.getUserMedia({
               video: { 
-                ...common, 
                 facingMode: 'environment',
-                // Forza constraints per iOS
                 width: { ideal: 1920, min: 1280 },
-                height: { ideal: 1080, min: 720 }
+                height: { ideal: 1080, min: 720 },
+                frameRate: { ideal: 30, min: 15 }
               }
             });
             cameraFound = true;
@@ -239,7 +236,6 @@ const BarcodeScanner = ({
               frameRate: { ideal: 30, min: 15 }
             };
             
-            // Rimuovi deviceId per iOS Safari
             if (safari) {
               console.log('Using Safari-specific constraints');
               (iosConstraints as any).deviceId = undefined;
@@ -287,10 +283,10 @@ const BarcodeScanner = ({
               const secondDevice = videoDevices[1]; // Il secondo dispositivo è spesso la fotocamera posteriore
               stream = await navigator.mediaDevices.getUserMedia({
                 video: { 
-                  ...common, 
                   deviceId: { exact: secondDevice.deviceId },
                   width: { ideal: 1920, min: 1280 },
-                  height: { ideal: 1080, min: 720 }
+                  height: { ideal: 1080, min: 720 },
+                  frameRate: { ideal: 30, min: 15 }
                 }
               });
               cameraFound = true;
@@ -324,15 +320,9 @@ const BarcodeScanner = ({
           }
         }
 
-        // FALLBACK FINALE: User camera (frontale)
+        // SE NON TROVA LA FOTOCAMERA POSTERIORE, LANCIA UN ERRORE
         if (!cameraFound) {
-          console.log('🔄 Final fallback: Using user camera (front)');
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { ...common, facingMode: 'user' }
-          });
-          const track = stream.getVideoTracks()[0];
-          selectedDeviceIdRef.current = track?.getSettings()?.deviceId;
-          console.log('⚠️ Using front camera as final fallback');
+          throw new Error('Fotocamera posteriore non disponibile. Impossibile utilizzare la fotocamera frontale.');
         }
       } else {
         // Desktop → frontale
@@ -382,11 +372,13 @@ const BarcodeScanner = ({
       if (e?.name === 'NotAllowedError' || String(e?.message).includes('permission')) {
         setShowPermissionError(true);
       } else if (e?.name === 'NotFoundError') {
-        setError('Fotocamera non trovata. Assicurati che il dispositivo abbia una fotocamera.');
+        setError('Fotocamera posteriore non trovata. Assicurati che il dispositivo abbia una fotocamera posteriore.');
       } else if (e?.name === 'NotReadableError') {
-        setError("Fotocamera non accessibile. Potrebbe essere utilizzata da un'altra applicazione.");
+        setError("Fotocamera posteriore non accessibile. Potrebbe essere utilizzata da un'altra applicazione.");
+      } else if (e?.message?.includes('posteriore')) {
+        setError('Fotocamera posteriore non disponibile. Impossibile utilizzare la fotocamera frontale.');
       } else {
-        setError(`Errore nell'accesso alla fotocamera: ${e?.message || e}`);
+        setError(`Errore nell'accesso alla fotocamera posteriore: ${e?.message || e}`);
       }
       setIsScanning(false);
       onScannerStateChange?.(false);
@@ -427,7 +419,11 @@ const BarcodeScanner = ({
         height: isMobile ? 'calc(100vh - 80px - env(safe-area-inset-bottom))' : 'auto',
         zIndex: isMobile ? 9999 : 'auto',
         backgroundColor: isMobile ? 'black' : 'transparent',
-        overflow: isMobile ? 'hidden' : 'visible'
+        overflow: isMobile ? 'hidden' : 'visible',
+        margin: 0,
+        padding: 0,
+        border: 'none',
+        borderRadius: 0
       }}
     >
       <div
@@ -435,7 +431,12 @@ const BarcodeScanner = ({
         style={{
           width: isMobile ? '100vw' : '100%',
           height: isMobile ? 'calc(100vh - 80px - env(safe-area-inset-bottom))' : 'auto',
-          overflow: isMobile ? 'hidden' : 'visible'
+          overflow: isMobile ? 'hidden' : 'visible',
+          margin: 0,
+          padding: 0,
+          border: 'none',
+          borderRadius: 0,
+          backgroundColor: 'black'
         }}
       >
         <video
@@ -447,7 +448,12 @@ const BarcodeScanner = ({
           style={{
             objectFit: 'cover',
             width: isMobile ? '100vw' : '100%',
-            height: isMobile ? 'calc(100vh - 80px - env(safe-area-inset-bottom))' : 'auto'
+            height: isMobile ? 'calc(100vh - 80px - env(safe-area-inset-bottom))' : 'auto',
+            margin: 0,
+            padding: 0,
+            border: 'none',
+            borderRadius: 0,
+            backgroundColor: 'black'
           }}
         />
 
