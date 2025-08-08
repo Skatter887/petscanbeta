@@ -9,7 +9,7 @@ import BarcodeScanner from './BarcodeScanner';
 import ProductNotFoundModal from './ProductNotFoundModal';
 import AddProductModal from './AddProductModal';
 
-// Animazioni CSS personalizzate per le zampette decorative
+// Animazioni CSS personalizzate per le zampette decorative e barra di ricerca
 const pawAnimations = `
   @keyframes pulse-slow {
     0%, 100% {
@@ -49,6 +49,59 @@ const pawAnimations = `
   
   .animate-spin-slow {
     animation: spin-slow 2s linear infinite;
+  }
+
+  @keyframes search-border-shine {
+    0% {
+      background-position: -200% 0%;
+    }
+    100% {
+      background-position: 200% 0%;
+    }
+  }
+
+  .search-border-animation::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(34, 197, 94, 0.1) 10%,
+      rgba(34, 197, 94, 0.3) 20%,
+      rgba(34, 197, 94, 0.6) 30%,
+      rgba(34, 197, 94, 0.8) 40%,
+      rgba(34, 197, 94, 1) 50%,
+      rgba(251, 191, 36, 1) 60%,
+      rgba(251, 191, 36, 0.8) 70%,
+      rgba(251, 191, 36, 0.6) 80%,
+      rgba(251, 191, 36, 0.3) 90%,
+      rgba(251, 191, 36, 0.1) 100%,
+      transparent 110%
+    );
+    background-size: 200% 100%;
+    animation: search-border-shine 12s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(0.3px);
+  }
+
+  .search-border-animation::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(34, 197, 94, 0.05) 0%,
+      rgba(34, 197, 94, 0.1) 25%,
+      rgba(251, 191, 36, 0.1) 50%,
+      rgba(251, 191, 36, 0.05) 75%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: -2;
   }
 `;
 
@@ -690,12 +743,12 @@ const HeroSection = () => {
       {/* Contenuto normale - nascosto quando scanner è attivo */}
       {!showScanner && (
         <section className="relative min-h-screen flex flex-col justify-between items-center px-2 md:px-4 py-0 md:py-16 pb-0 md:pb-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden hero-section-container" style={{ paddingBottom: analysisResult ? '3rem' : '2rem' }}>
-          {/* Logo PetScan - visibile solo su mobile con safe area support */}
-          <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-1' : 'top-4'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.25rem + env(safe-area-inset-top))' : 'calc(1rem + env(safe-area-inset-top))' }}>
+          {/* Logo PetScan - posizionato più in alto */}
+          <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-0' : 'top-2'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.1rem + env(safe-area-inset-top))' : 'calc(0.5rem + env(safe-area-inset-top))' }}>
             <img 
               src="/logo_no_cont.png" 
               alt="PetScan Logo" 
-              className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200 logo-webapp-lower`}
+              className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200 logo-webapp-higher`}
             />
           </div>
 
@@ -727,9 +780,9 @@ const HeroSection = () => {
             ))}
           </div>
 
-          <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-center flex-1 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-2' : 'gap-4'} md:gap-8 hero-content-wrapper`} style={{ paddingBottom: analysisResult ? '2rem' : '1rem', paddingLeft: analysisResult ? '0.5rem' : '1rem', paddingRight: analysisResult ? '0.5rem' : '1rem' }}>
-            {/* Hero Content (testo invariato) */}
-            <div className={`${analysisResult ? 'mt-8' : ''}`}>
+          <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-start flex-1 pt-16 md:pt-4 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-2' : 'gap-4'} md:gap-8 hero-content-wrapper`} style={{ paddingBottom: analysisResult ? '2rem' : '1rem', paddingLeft: analysisResult ? '0.5rem' : '1rem', paddingRight: analysisResult ? '0.5rem' : '1rem' }}>
+            {/* Hero Content (testo invariato) - spostato più in alto */}
+            <div className={`${analysisResult ? 'mt-4' : 'mt-0'} hero-content-higher`}>
               <HeroContent 
                 onAnalyzeClick={handleAnalyzeClick}
                 onExamplesClick={() => {}}
@@ -737,23 +790,24 @@ const HeroSection = () => {
               />
             </div>
             
-            {/* Barra di ricerca */}
-            <div id="scannerizza-form" className="w-full md:hidden relative">
-              <form
-                onSubmit={handleSubmit}
-                className={`w-full max-w-xl mx-auto flex flex-row items-center gap-0 shadow-lg border-2 border-transparent relative overflow-visible bg-white/90 rounded-full py-3 px-2 backdrop-blur-md min-h-[60px] !transition-all !duration-200`}
-                style={{
-                  WebkitAppearance: 'none',
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation',
-                  boxSizing: 'border-box',
-                  willChange: 'transform',
-                  zIndex: 10,
-                  background: 'linear-gradient(white, white) padding-box, linear-gradient(90deg, #ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #e8baff, #ffb3f7, #ffb3ba) border-box',
-                  backgroundSize: '110% 110%',
-                  animation: 'rainbow-border 800s ease-in-out infinite',
-                }}
-              >
+                         {/* Barra di ricerca */}
+             <div id="scannerizza-form" className="w-full md:hidden relative mt-[4vh] mb-[6vh]">
+              <div className="relative w-full max-w-xl mx-auto">
+                {/* Animazione bordo miccia mobile */}
+                <div className="absolute inset-0 rounded-full search-border-animation" style={{ zIndex: 1 }} />
+                
+                <form
+                  onSubmit={handleSubmit}
+                  className={`relative w-full flex flex-row items-center gap-0 shadow-lg border border-white/40 overflow-visible bg-white/90 rounded-full py-3 px-2 backdrop-blur-md min-h-[60px] !transition-all !duration-200`}
+                  style={{
+                    WebkitAppearance: 'none',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    boxSizing: 'border-box',
+                    willChange: 'transform',
+                    zIndex: 2,
+                  }}
+                >
                 {/* Scanner icon sinistra */}
                 <button
                   type="button"
@@ -817,6 +871,7 @@ const HeroSection = () => {
                   <Search className="w-7 h-7" style={{ display: 'block' }} />
                 </button>
               </form>
+              </div>
             </div>
           </div>
         </section>
@@ -828,19 +883,28 @@ const HeroSection = () => {
       </div>
 
       {/* Barra di ricerca desktop - visibile solo su desktop */}
-      <form
-        onSubmit={handleSubmit}
-        className={`hidden md:flex w-full max-w-lg mx-auto flex-row items-center gap-0 mt-8 mb-8 shadow-lg border border-white/40 relative overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-5 px-6 backdrop-blur-md min-h-[64px]'}
-          !transition-all !duration-200`}
-        style={{
-          WebkitAppearance: 'none',
-          WebkitTapHighlightColor: 'transparent',
-          touchAction: 'manipulation',
-          boxSizing: 'border-box',
-          willChange: 'transform',
-          zIndex: 10,
-        }}
-      >
+      <div className="relative hidden md:block w-full max-w-lg mx-auto mt-8 mb-8">
+        {/* Animazione bordo miccia */}
+        <div 
+          className={`absolute inset-0 ${showScanner ? 'rounded-3xl' : 'rounded-full'} search-border-animation`}
+          style={{
+            zIndex: 1,
+          }}
+        />
+        
+        <form
+          onSubmit={handleSubmit}
+          className={`relative flex w-full flex-row items-center gap-0 shadow-lg border border-white/40 overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-5 px-6 backdrop-blur-md min-h-[64px]'}
+            !transition-all !duration-200`}
+          style={{
+            WebkitAppearance: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            boxSizing: 'border-box',
+            willChange: 'transform',
+            zIndex: 2,
+          }}
+        >
         {/* Scanner icon sinistra */}
         {!showScanner && (
           <button
@@ -966,6 +1030,7 @@ const HeroSection = () => {
           </div>
         )}
       </form>
+      </div>
 
       {/* Loading Component */}
       {(isLoading || analysisLoading) && (
@@ -994,7 +1059,7 @@ const HeroSection = () => {
 
       {/* Risultato analisi */}
       {analysisResult && (
-        <div className="w-full mt-16" data-analysis-card>
+        <div className="w-full mt-4" data-analysis-card>
           <ProductEvaluationCard result={analysisResult} onResetSearch={resetSearchField} />
         </div>
       )}

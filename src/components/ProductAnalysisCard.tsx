@@ -108,21 +108,21 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
   return (
     <div className="w-full">
       <Card className="w-full max-w-none mx-auto animate-fade-in" style={{ padding: 0, margin: '0 auto' }}>
-      <CardHeader className="text-center space-y-4 px-0" style={{ padding: '1.5rem 1rem' }}>
+      <CardHeader className="text-center space-y-2 px-0" style={{ padding: '1rem 1rem 0.5rem 1rem' }}>
         <div className="flex items-center justify-center space-x-3">
           {result.imageUrl && (
             <img 
               src={result.imageUrl} 
               alt={result.productName}
-              className="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-gray-100"
+              className="w-12 h-12 rounded-full object-cover shadow-lg border-2 border-gray-100"
             />
           )}
           <div className="text-center">
-            <CardTitle className="text-xl font-bold text-gray-900 leading-tight mb-2">
+            <CardTitle className="text-lg font-bold text-gray-900 leading-tight mb-1">
               {result.productName}
             </CardTitle>
-            <div className="mb-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border border-green-200">
+            <div className="mb-1">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border border-green-200">
                 {result.brand}
               </span>
             </div>
@@ -130,22 +130,22 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
         </div>
 
         {/* Circular Progress */}
-        <div className="flex items-center justify-center space-x-4">
+        <div className="flex items-center justify-center space-x-3">
           <div className="relative">
-            <svg className="w-24 h-24 transform -rotate-90">
+            <svg className="w-20 h-20 transform -rotate-90">
               <circle
-                cx="48"
-                cy="48"
-                r="40"
+                cx="40"
+                cy="40"
+                r="32"
                 stroke="hsl(var(--muted))"
-                strokeWidth="6"
+                strokeWidth="5"
                 fill="none"
               />
               <circle
-                cx="48"
-                cy="48"
-                r="40"
-                strokeWidth="6"
+                cx="40"
+                cy="40"
+                r="32"
+                strokeWidth="5"
                 fill="none"
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
@@ -155,19 +155,19 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl font-bold" style={{ color: getScoreColor(result.overallScore) }}>
+              <span className="text-xl font-bold" style={{ color: getScoreColor(result.overallScore) }}>
                 {result.overallScore}
               </span>
             </div>
           </div>
           
           <div className="text-center">
-            <div className="text-3xl font-bold" style={{ color: getScoreColor(result.overallScore) }}>
+            <div className="text-2xl font-bold" style={{ color: getScoreColor(result.overallScore) }}>
               {result.overallScore}/100
             </div>
             <Badge 
               variant={getEvaluationBadgeVariant(result.evaluationStatus)}
-              className={`mt-2 ${getEvaluationBadgeClass(result.evaluationStatus)}`}
+              className={`mt-1 ${getEvaluationBadgeClass(result.evaluationStatus)}`}
             >
               {getEvaluationIcon(result.evaluationStatus)}
               {result.evaluationLabel}
@@ -176,36 +176,36 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6 px-0" style={{ padding: '0 1rem 1rem 1rem' }}>
+      <CardContent className="space-y-4 px-0" style={{ padding: '0 1rem 0.5rem 1rem' }}>
         {/* Nutritional Analysis */}
         <div>
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
-            <Leaf className="w-5 h-5 mr-2" style={{ color: '#1FC77C' }} />
+          <h3 className="text-base font-semibold text-foreground mb-2 flex items-center">
+            <Leaf className="w-4 h-4 mr-2" style={{ color: '#1FC77C' }} />
             Analisi Nutrizionale
           </h3>
           
-          <div className="space-y-3">
+          <div className="space-y-2">
             {result.nutritionalValues.map((nutrient, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-accent rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">
+              <div key={index} className="flex items-center justify-between p-2 bg-accent rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg">
                     {getIconForNutrient(nutrient.icon)}
                   </span>
                   <div>
-                    <div className="font-medium text-foreground">
+                    <div className="font-medium text-foreground text-sm">
                       {nutrient.label}
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                       {nutrient.value}%
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
                   <div 
-                    className={`w-3 h-3 rounded-full ${getStatusColor(nutrient.status)}`}
+                    className={`w-2 h-2 rounded-full ${getStatusColor(nutrient.status)}`}
                   />
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-xs font-medium text-foreground">
                     {getStatusText(nutrient.status)}
                   </span>
                 </div>
@@ -216,14 +216,14 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
 
         {/* Recommendation */}
         {result.recommendation && (
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <Zap className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+            <div className="flex items-start space-x-2">
+              <Zap className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="font-medium text-primary mb-1">
+                <h4 className="font-medium text-primary mb-1 text-sm">
                   Raccomandazione
                 </h4>
-                <p className="text-sm text-foreground">
+                <p className="text-xs text-foreground">
                   {result.recommendation}
                 </p>
               </div>
@@ -234,8 +234,8 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
         {/* Success Message */}
         {result.evaluationStatus === 'approved' && (
           <div className="text-center">
-            <div className="text-2xl mb-2">🎉</div>
-            <p className="text-lg font-medium text-primary">
+            <div className="text-xl mb-1">🎉</div>
+            <p className="text-sm font-medium text-primary">
               Ottima Scelta per il tuo Pet!
             </p>
           </div>
@@ -244,8 +244,8 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
         {/* Warning Message for "Could be better" */}
         {result.evaluationStatus === 'could-be-better' && (
           <div className="text-center">
-            <div className="text-2xl mb-2">⚠️</div>
-            <p className="text-lg font-medium text-secondary">
+            <div className="text-xl mb-1">⚠️</div>
+            <p className="text-sm font-medium text-secondary">
               Prodotto accettabile, ma esistono alternative migliori
             </p>
           </div>
@@ -254,8 +254,8 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
         {/* Alert Message for "Not approved" */}
         {result.evaluationStatus === 'not-approved' && (
           <div className="text-center">
-            <div className="text-2xl mb-2">❌</div>
-            <p className="text-lg font-medium text-muted-foreground">
+            <div className="text-xl mb-1">❌</div>
+            <p className="text-sm font-medium text-muted-foreground">
               Ti consigliamo di scegliere un prodotto diverso
             </p>
           </div>
@@ -264,7 +264,7 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
     </Card>
 
     {/* Button for another analysis */}
-    <div className="mt-4 px-4 pb-0 flex justify-center items-center">
+    <div className="mt-2 px-4 pb-0 flex justify-center items-center">
       <Button 
         onClick={() => {
           // Reset the search field using the provided function
@@ -282,13 +282,41 @@ const ProductAnalysisCard = ({ result, onResetSearch }: ProductAnalysisCardProps
             }
           }
         }}
-        className="w-full max-w-md bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 text-white font-bold py-6 px-6 rounded-2xl shadow-xl transition-all duration-300 transform hover:scale-105 border-2 border-white/20"
+        className="group relative w-full max-w-md bg-gradient-to-br from-green-400 via-green-500 to-orange-400 hover:from-green-500 hover:via-green-600 hover:to-orange-500 text-white font-bold py-4 px-6 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02] hover:-translate-y-1 border border-white/20 backdrop-blur-sm"
+        style={{
+          background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 25%, #fb923c 75%, #f97316 100%)',
+          boxShadow: '0 8px 32px rgba(34, 197, 94, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset'
+        }}
       >
-        <div className="flex items-center justify-center space-x-3">
-          <span className="text-lg">🔍</span>
-          <span className="text-lg">Effettua un'altra analisi</span>
-          <span className="text-xl">🐾</span>
+        {/* Animated background glow */}
+        <div className="absolute -inset-0.5 bg-gradient-to-br from-green-400 via-green-500 to-orange-400 rounded-2xl blur-sm opacity-30 group-hover:opacity-60 group-hover:blur-md transition-all duration-500 -z-10 animate-pulse"></div>
+        
+        {/* Shimmer effect */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+        
+        <div className="relative flex items-center justify-center space-x-3">
+          <div className="flex items-center justify-center w-6 h-6 bg-white/20 rounded-full group-hover:bg-white/30 transition-all duration-300">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-white group-hover:scale-110 transition-transform duration-300">
+              <path d="M3 7V5a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M17 3h2a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M21 17v2a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M7 21H5a2 2 0 0 1-2-2v-2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              <circle cx="12" cy="12" r="1" fill="currentColor" className="animate-ping"/>
+            </svg>
+          </div>
+          
+          <span className="text-base font-bold tracking-wide group-hover:tracking-wider transition-all duration-300">
+            Effettua un'altra analisi
+          </span>
+          
+          <div className="flex items-center space-x-1">
+            <span className="text-sm group-hover:animate-bounce" style={{ animationDelay: '0ms' }}>🐾</span>
+            <span className="text-sm group-hover:animate-bounce" style={{ animationDelay: '150ms' }}>✨</span>
+          </div>
         </div>
+        
+        {/* Success indicator */}
+        <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity duration-300"></div>
       </Button>
     </div>
     </div>

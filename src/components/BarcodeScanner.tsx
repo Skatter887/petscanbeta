@@ -25,7 +25,7 @@ const BarcodeScanner = ({
   const [error, setError] = useState<string | null>(null);
   const [showPermissionError, setShowPermissionError] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-
+  
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -411,14 +411,14 @@ const BarcodeScanner = ({
     scannedRef.current = false;
 
     try {
-      if (controlsRef.current) {
+    if (controlsRef.current) {
         console.log('🛑 Stopping ZXing controls');
         controlsRef.current.stop?.();
       }
     } catch (e) {
       console.warn('Error stopping ZXing controls:', e);
     }
-    controlsRef.current = null;
+      controlsRef.current = null;
 
     const vid = videoRef.current;
     if (vid && vid.srcObject) {
@@ -508,7 +508,7 @@ const BarcodeScanner = ({
             </div>
           </div>
         </div>
-
+        
         {/* Controlli */}
         <div
           className={`absolute ${isMobile ? 'top-4 right-4' : 'top-2 right-2'} z-30 flex gap-2`}
@@ -518,13 +518,13 @@ const BarcodeScanner = ({
             <X className="w-4 h-4" />
           </Button>
         </div>
-
+        
         {/* Istruzioni */}
         <div
-          className={`absolute ${isMobile ? 'bottom-4 left-4 right-4' : 'bottom-1 left-2 right-2'} text-center z-30`}
-          style={{ bottom: isMobile ? '1rem' : '0.25rem' }}
+          className={`absolute ${isMobile ? 'bottom-20 left-4 right-4' : 'bottom-1 left-2 right-2'} text-center z-30`}
+          style={{ bottom: isMobile ? 'calc(120px + env(safe-area-inset-bottom))' : '0.25rem' }}
         >
-          <p className="text-sm text-white bg-black/50 rounded px-3 py-2">
+          <p className="text-sm text-white bg-black/70 rounded-lg px-4 py-3 backdrop-blur-sm border border-white/20">
             {isMobile ? 'Inquadra il barcode e mantieni fermo il dispositivo' : 'Inquadra il barcode nel riquadro'}
           </p>
         </div>

@@ -161,70 +161,103 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation Bar - visibile solo su mobile */}
-      <nav className="md:hidden mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[9999] bg-white/80 backdrop-blur-lg shadow-2xl border-t border-white/20" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <div className="flex items-center justify-around px-4 py-3 max-w-md mx-auto">
-          {/* Guida */}
-          <button
-            onClick={() => scrollToSection('come-funziona')}
-            className="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <div className="w-4 h-4 mb-1 flex items-center justify-center">
-              <Settings className="w-4 h-4" style={{ color: '#16a34a', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
-            </div>
-            <span className="text-[10px] font-bold" style={{ color: '#16a34a', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Guida</span>
-          </button>
+      {/* Mobile Bottom Navigation Bar - Dynamic with UI effects */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] px-6 animate-in slide-in-from-bottom-4 duration-500" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
+        <nav className="bg-white/95 backdrop-blur-2xl rounded-[20px] shadow-lg border border-gray-100/80 mx-auto max-w-xs hover:shadow-xl transition-all duration-500 hover:scale-[1.02]">
+          <div className="flex items-center justify-between px-4 py-2">
+            {/* Guida */}
+            <button
+              onClick={() => scrollToSection('come-funziona')}
+              className="group flex flex-col items-center justify-center transition-all duration-300 active:scale-90 touch-manipulation hover:scale-110"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-1 shadow-sm border border-gray-100 group-hover:bg-green-50 group-hover:border-green-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
+                <Settings className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors duration-300" strokeWidth="1.8" />
+              </div>
+              <span className="text-[9px] font-medium text-gray-500 group-hover:text-green-600 transition-colors duration-300">Guida</span>
+            </button>
 
-          {/* Analisi */}
-          <button
-            onClick={() => scrollToSection('prodotti')}
-            className="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <div className="w-4 h-4 mb-1 flex items-center justify-center">
-              <FileText className="w-4 h-4" style={{ color: '#ea580c', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
-            </div>
-            <span className="text-[10px] font-bold" style={{ color: '#ea580c', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Analisi</span>
-          </button>
+            {/* Esempi */}
+            <button
+              onClick={() => scrollToSection('prodotti')}
+              className="group flex flex-col items-center justify-center transition-all duration-300 active:scale-90 touch-manipulation hover:scale-110"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-1 shadow-sm border border-gray-100 group-hover:bg-orange-50 group-hover:border-orange-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
+                <FileText className="w-4 h-4 text-gray-500 group-hover:text-orange-600 transition-colors duration-300" strokeWidth="1.8" />
+              </div>
+              <span className="text-[9px] font-medium text-gray-500 group-hover:text-orange-600 transition-colors duration-300">Esempi</span>
+            </button>
 
-          {/* Scannerizza - Pulsante centrale semplificato */}
-          <button
-            onClick={() => scrollToSection('scannerizza-form')}
-            className="flex flex-col items-center justify-center w-14 h-13 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <div className="w-5 h-5 mb-1 flex items-center justify-center">
-              <Search className="w-4 h-4" style={{ color: '#000000', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))', strokeWidth: '3' }} />
-            </div>
-            <span className="text-[10px] font-bold" style={{ color: '#000000', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Scannerizza</span>
-          </button>
+            {/* Scannerizza - Dynamic central button with enhanced effects */}
+            <button
+              onClick={() => scrollToSection('scannerizza-form')}
+              className="group flex flex-col items-center justify-center transition-all duration-500 active:scale-90 touch-manipulation hover:scale-110 -mt-1"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-orange-400 flex items-center justify-center mb-1 shadow-lg relative border border-white group-hover:shadow-2xl group-hover:from-green-500 group-hover:to-orange-500 transition-all duration-500 group-active:scale-90">
+                {/* Enhanced animated glow effect */}
+                <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-br from-green-400 to-orange-400 blur-sm opacity-30 group-hover:opacity-60 group-hover:blur-md transition-all duration-500 -z-10 animate-pulse"></div>
+                
+                {/* Rotating border effect */}
+                <div className="absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-20">
+                  <div className="w-full h-full rounded-2xl bg-gradient-to-r from-green-400 via-orange-400 to-green-400 animate-spin-slow blur-sm"></div>
+                </div>
+                
+                {/* Premium scanner icon with micro-animation */}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white group-hover:scale-110 transition-transform duration-300">
+                  <path d="M3 7V5a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M17 3h2a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M21 17v2a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M7 21H5a2 2 0 0 1-2-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M7 12h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="animate-pulse"/>
+                  <circle cx="12" cy="12" r="1" fill="currentColor" className="animate-ping"/>
+                </svg>
+              </div>
+              <span className="text-[9px] font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-300">Scan</span>
+            </button>
 
-          {/* Chi Siamo */}
-          <button
-            onClick={navigateToAboutUs}
-            className="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <div className="w-4 h-4 mb-1 flex items-center justify-center">
-              <Heart className="w-4 h-4" style={{ color: '#ea580c', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
-            </div>
-            <span className="text-[10px] font-bold" style={{ color: '#ea580c', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Chi Siamo</span>
-          </button>
+            {/* Chi Siamo */}
+            <button
+              onClick={navigateToAboutUs}
+              className="group flex flex-col items-center justify-center transition-all duration-300 active:scale-90 touch-manipulation hover:scale-110"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-1 shadow-sm border border-gray-100 group-hover:bg-red-50 group-hover:border-red-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
+                <Heart className="w-4 h-4 text-gray-500 group-hover:text-red-500 transition-colors duration-300 group-hover:animate-pulse" strokeWidth="1.8" />
+              </div>
+              <span className="text-[9px] font-medium text-gray-500 group-hover:text-red-500 transition-colors duration-300">Chi Siamo</span>
+            </button>
 
-          {/* FAQ */}
-          <button
-            onClick={() => scrollToSection('faq')}
-            className="flex flex-col items-center justify-center w-12 h-12 rounded-full transition-all duration-200 active:scale-95 touch-manipulation hover:bg-white/30"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
-          >
-            <div className="w-4 h-4 mb-1 flex items-center justify-center">
-              <HelpCircle className="w-4 h-4" style={{ color: '#16a34a', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }} />
-            </div>
-            <span className="text-[10px] font-bold" style={{ color: '#16a34a', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>FAQ</span>
-          </button>
-        </div>
-      </nav>
+            {/* FAQ */}
+            <button
+              onClick={() => scrollToSection('faq')}
+              className="group flex flex-col items-center justify-center transition-all duration-300 active:scale-90 touch-manipulation hover:scale-110"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-1 shadow-sm border border-gray-100 group-hover:bg-teal-50 group-hover:border-teal-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
+                <HelpCircle className="w-4 h-4 text-gray-500 group-hover:text-teal-600 transition-colors duration-300" strokeWidth="1.8" />
+              </div>
+              <span className="text-[9px] font-medium text-gray-500 group-hover:text-teal-600 transition-colors duration-300">FAQ</span>
+            </button>
+          </div>
+        </nav>
+      </div>
+
+      <style jsx>{`
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+      `}</style>
 
       <ContactModal 
         isOpen={isContactModalOpen} 

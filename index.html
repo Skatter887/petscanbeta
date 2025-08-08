@@ -152,15 +152,67 @@
           margin-bottom: 0 !important;
         }
         
-        /* Lower HeroContent by 50% in webapp mode */
-        .hero-content-webapp {
-          margin-top: 50% !important;
+        /* Ensure proper spacing between logo and content in webapp */
+        @media screen and (display-mode: browser) and (max-width: 768px) {
+          .hero-content-wrapper {
+            padding-top: 2rem !important;
+          }
         }
-        
-        /* Lower logo by 7% and increase size by 4% in webapp mode */
-        .logo-webapp-lower {
-          margin-top: 20% !important;
-          transform: scale(1.30) !important;
+      }
+      
+      /* iOS WebApp specific fixes */
+      @supports (-webkit-touch-callout: none) {
+        @media screen and (display-mode: browser) and (max-width: 768px) {
+          /* iOS WebApp: Lower HeroContent significantly to avoid logo overlap */
+          .hero-content-webapp {
+            margin-top: 54% !important;
+            padding-top: 1rem !important;
+          }
+          
+          /* iOS WebApp: Position logo higher with smaller scale */
+          .logo-webapp-higher {
+            margin-top: 12% !important;
+            transform: scale(0.9) !important;
+          }
+          
+          /* iOS WebApp: Add extra spacing to wrapper */
+          .hero-content-wrapper {
+            padding-top: 3rem !important;
+            margin-top: 2rem !important;
+          }
+          
+          /* iOS WebApp: Adjust container spacing */
+          .hero-section-container {
+            padding-top: 1rem !important;
+          }
+          
+          /* iOS WebApp: Add 2% padding between paragraph and search bar */
+          #scannerizza-form {
+            margin-top: calc(4vh + 2vh) !important;
+          }
+          
+          /* iOS WebApp: Keep logo size and position fixed during analysis */
+          .logo-webapp-higher {
+            width: 12.5rem !important; /* w-50 */
+            height: 12.5rem !important; /* h-50 */
+            margin-top: 12% !important;
+            transform: scale(0.9) !important;
+          }
+          
+          /* iOS WebApp: Keep logo container position fixed during analysis */
+          .md\\:hidden.absolute.z-30 {
+            top: calc(0.5rem + env(safe-area-inset-top)) !important;
+          }
+          
+          /* iOS WebApp: Keep title size fixed during analysis */
+          .hero-content-webapp h1 {
+            font-size: 2.25rem !important; /* text-4xl */
+          }
+          
+          /* iOS WebApp: Keep paragraph size fixed during analysis */
+          .hero-content-webapp p {
+            font-size: 1rem !important; /* text-base */
+          }
         }
       }
       
@@ -172,6 +224,69 @@
         
         .mobile-bottom-nav > div {
           padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)) !important;
+        }
+        
+        /* Prevent overlap in PWA standalone mode */
+        .hero-content-webapp {
+          margin-top: 25% !important;
+        }
+        
+        .logo-webapp-higher {
+          margin-top: 5% !important;
+          transform: scale(1.05) !important;
+        }
+        
+        .hero-content-wrapper {
+          padding-top: 1.5rem !important;
+        }
+      }
+      
+      /* iOS PWA standalone mode specific fixes */
+      @supports (-webkit-touch-callout: none) {
+        @media screen and (display-mode: standalone) {
+          /* iOS PWA: Optimize spacing for standalone mode */
+          .hero-content-webapp {
+            margin-top: 44% !important;
+            padding-top: 1.5rem !important;
+          }
+          
+          .logo-webapp-higher {
+            margin-top: 8% !important;
+            transform: scale(0.95) !important;
+          }
+          
+          .hero-content-wrapper {
+            padding-top: 2.5rem !important;
+            margin-top: 1.5rem !important;
+          }
+          
+          /* iOS PWA: Add 2% padding between paragraph and search bar */
+          #scannerizza-form {
+            margin-top: calc(4vh + 2vh) !important;
+          }
+          
+          /* iOS PWA: Keep logo size and position fixed during analysis */
+          .logo-webapp-higher {
+            width: 12.5rem !important; /* w-50 */
+            height: 12.5rem !important; /* h-50 */
+            margin-top: 8% !important;
+            transform: scale(0.95) !important;
+          }
+          
+          /* iOS PWA: Keep logo container position fixed during analysis */
+          .md\\:hidden.absolute.z-30 {
+            top: calc(0.5rem + env(safe-area-inset-top)) !important;
+          }
+          
+          /* iOS PWA: Keep title size fixed during analysis */
+          .hero-content-webapp h1 {
+            font-size: 2.25rem !important; /* text-4xl */
+          }
+          
+          /* iOS PWA: Keep paragraph size fixed during analysis */
+          .hero-content-webapp p {
+            font-size: 1rem !important; /* text-base */
+          }
         }
       }
       
