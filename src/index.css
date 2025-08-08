@@ -344,3 +344,64 @@
 .animate-float-center {
   animation: float-center 5.2s ease-in-out infinite;
 }
+
+/* Mobile bottom navigation - sempre in fondo */
+.mobile-bottom-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(20px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Quando lo scanner è attivo, l'header deve rimanere in fondo */
+.scanner-active .mobile-bottom-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 10000 !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(25px) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}
+
+/* Assicurati che il contenuto non venga coperto dall'header */
+.hero-section-container {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+}
+
+/* Scanner fullscreen con spazio per header */
+.scanner-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  width: 100vw !important;
+  height: calc(100vh - 80px - env(safe-area-inset-bottom)) !important;
+  z-index: 9999 !important;
+  background-color: black !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.scanner-fullscreen video {
+  width: 100vw !important;
+  height: calc(100vh - 80px - env(safe-area-inset-bottom)) !important;
+  object-fit: cover !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}

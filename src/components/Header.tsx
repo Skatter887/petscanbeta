@@ -162,7 +162,7 @@ const Header = () => {
       </header>
 
       {/* Mobile Bottom Navigation Bar - visibile solo su mobile */}
-      <nav className="md:hidden mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[9999] bg-white/80 backdrop-blur-lg shadow-2xl border-t border-white/20">
+      <nav className="md:hidden mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[9999] bg-white/80 backdrop-blur-lg shadow-2xl border-t border-white/20" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="flex items-center justify-around px-4 py-3 max-w-md mx-auto">
           {/* Guida */}
           <button

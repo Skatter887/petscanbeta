@@ -303,9 +303,9 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
       top: isMobile ? 0 : 'auto',
       left: isMobile ? 0 : 'auto',
       right: isMobile ? 0 : 'auto',
-      bottom: isMobile ? '80px' : 'auto', // Lascia spazio per l'header in basso
+      bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom))' : 'auto', // Spazio per header + safe area
       width: isMobile ? '100vw' : '100%',
-      height: isMobile ? 'calc(100vh - 80px)' : 'auto', // Altezza meno l'header
+      height: isMobile ? 'calc(100vh - 80px - env(safe-area-inset-bottom))' : 'auto', // Altezza meno header e safe area
       zIndex: isMobile ? 9999 : 'auto',
       backgroundColor: isMobile ? 'black' : 'transparent',
       margin: isMobile ? 0 : 'auto',
@@ -317,7 +317,7 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
       {/* Camera Preview - Fullscreen su mobile */}
       <div className={`relative ${isMobile ? 'w-full h-full' : 'w-full max-w-full box-border'}`} style={{
         width: isMobile ? '100vw' : '100%',
-        height: isMobile ? 'calc(100vh - 80px)' : 'auto',
+        height: isMobile ? 'calc(100vh - 80px - env(safe-area-inset-bottom))' : 'auto',
         margin: isMobile ? 0 : 'auto',
         padding: isMobile ? 0 : 'auto',
         border: isMobile ? 'none' : 'auto',
@@ -333,7 +333,7 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
           style={{
             objectFit: 'cover',
             width: isMobile ? '100vw' : '100%',
-            height: isMobile ? 'calc(100vh - 80px)' : 'auto',
+            height: isMobile ? 'calc(100vh - 80px - env(safe-area-inset-bottom))' : 'auto',
             margin: isMobile ? 0 : 'auto',
             padding: isMobile ? 0 : 'auto',
             border: isMobile ? 'none' : 'auto',
@@ -408,7 +408,7 @@ const BarcodeScanner = ({ onScan, onManualEntry, isLoading, resetTrigger, onScan
         <div className={`${isMobile ? 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-white rounded-lg p-4 max-w-sm w-full mx-4' : 'flex flex-col space-y-2 p-2 bg-destructive/10 border border-destructive/20 rounded-lg w-full max-w-full box-border'}`}>
           <div className={`flex items-center space-x-2 ${isMobile ? 'mb-3' : ''}`}>
             <AlertCircle className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} text-destructive`} />
-            <p className={`${isMobile ? 'text-sm' : 'text-xs'} text-destructive flex-1`}>{error}</p>
+            <p className={`${isMobile ? 'text-sm' : 'w-4 h-4'} text-destructive flex-1`}>{error}</p>
           </div>
           <div className="flex gap-2">
             <Button

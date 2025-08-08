@@ -626,8 +626,8 @@ const HeroSection = () => {
             />
           </div>
           
-          {/* Header di navigazione - posizionato in basso */}
-          <div className="absolute bottom-0 left-0 right-0 z-60 bg-white/90 backdrop-blur-md border-t border-gray-200">
+          {/* Header di navigazione - posizionato in basso, sempre visibile */}
+          <div className="absolute bottom-0 left-0 right-0 z-60 bg-white/90 backdrop-blur-md border-t border-gray-200" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             <div className="flex justify-around items-center py-2 px-4">
               <div className="flex flex-col items-center">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
