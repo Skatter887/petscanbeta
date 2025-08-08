@@ -244,6 +244,7 @@ const InserisciProd = () => {
                 isLoading={isLoading}
                 resetTrigger={resetTrigger}
                 onScannerStateChange={() => {}} // Callback vuota per InserisciProd
+                onClose={() => {}} // Callback vuota per InserisciProd
               />
             </div>
           </div>

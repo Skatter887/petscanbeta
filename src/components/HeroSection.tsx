@@ -719,6 +719,7 @@ const HeroSection = () => {
                   onManualEntry={handleScan}
                   isLoading={analysisLoading}
                   onScannerStateChange={setIsScannerActive}
+                  onClose={() => setShowScanner(false)}
                 />
                   <button
                     type="button"
@@ -881,6 +882,7 @@ const HeroSection = () => {
                   onManualEntry={handleScan}
                   isLoading={analysisLoading}
                   onScannerStateChange={setIsScannerActive}
+                  onClose={() => setShowScanner(false)}
                 />
                 <button
                   type="button"
