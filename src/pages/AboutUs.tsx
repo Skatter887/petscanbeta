@@ -3,15 +3,24 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Heart, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const AboutUs = () => {
+  const navigate = useNavigate();
+  
   const handleContactClick = () => {
     window.location.href = 'mailto:alessandro@mypetscan.it';
   };
 
   const scrollToSection = (sectionId: string) => {
     // Navigate to home page first, then scroll to section
-    window.location.href = '/#' + sectionId;
+    navigate('/');
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   return (

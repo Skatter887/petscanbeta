@@ -217,6 +217,116 @@ export const analyzeProduct = async (barcode: string): Promise<{
   };
 };
 
+// Interfaccia per i suggerimenti di autocomplete
+export interface AutocompleteSuggestion {
+  label: string;
+  value: string;
+  type: 'brand-title' | 'title' | 'brand' | 'ean';
+  ean: number;
+  brand: string;
+  title: string;
+  productData: ProductData;
+}
+
+// Funzione per ottenere suggerimenti di autocomplete - OTTIMIZZATA
+export const getAutocompleteSuggestions = async (searchTerm: string): Promise<AutocompleteSuggestion[]> => {
+  await ensureDatabaseLoaded();
+  
+  if (!searchTerm || searchTerm.length < 2) {
+    return [];
+  }
+
+  const term = searchTerm.toLowerCase();
+  const suggestions: AutocompleteSuggestion[] = [];
+  const seenValues = new Set<string>();
+  let count = 0;
+  const maxSuggestions = 8;
+
+  // Ottimizzazione: fermiamo la ricerca quando abbiamo abbastanza suggerimenti
+  for (const product of productDatabase) {
+    if (count >= maxSuggestions) break;
+
+    const brand = product.brand.toLowerCase();
+    const title = product.title.toLowerCase();
+    const ean = product.Ean.toString();
+    
+    // Priority 1: Match esatti del brand (più alta priorità)
+    if (brand.startsWith(term)) {
+      const suggestionValue = product.brand;
+      if (!seenValues.has(suggestionValue)) {
+        suggestions.push({
+          label: product.brand,
+          value: suggestionValue,
+          type: 'brand',
+          ean: product.Ean,
+          brand: product.brand,
+          title: product.title,
+          productData: transformProduct(product)
+        });
+        seenValues.add(suggestionValue);
+        count++;
+      }
+    }
+    
+    // Priority 2: Match per EAN (barcode)
+    else if (ean.includes(term)) {
+      const suggestionValue = `${product.brand} - ${product.title}`;
+      if (!seenValues.has(suggestionValue)) {
+        suggestions.push({
+          label: `${product.brand} - ${product.title} (${ean})`,
+          value: suggestionValue,
+          type: 'ean',
+          ean: product.Ean,
+          brand: product.brand,
+          title: product.title,
+          productData: transformProduct(product)
+        });
+        seenValues.add(suggestionValue);
+        count++;
+      }
+    }
+    
+    // Priority 3: Match per brand (contains)
+    else if (brand.includes(term)) {
+      const suggestionValue = product.brand;
+      if (!seenValues.has(suggestionValue)) {
+        suggestions.push({
+          label: product.brand,
+          value: suggestionValue,
+          type: 'brand',
+          ean: product.Ean,
+          brand: product.brand,
+          title: product.title,
+          productData: transformProduct(product)
+        });
+        seenValues.add(suggestionValue);
+        count++;
+      }
+    }
+    
+    // Priority 4: Match per title
+    else if (title.includes(term)) {
+      const suggestionValue = `${product.brand} - ${product.title}`;
+      if (!seenValues.has(suggestionValue)) {
+        suggestions.push({
+          label: `${product.brand} - ${product.title}`,
+          value: suggestionValue,
+          type: 'brand-title',
+          ean: product.Ean,
+          brand: product.brand,
+          title: product.title,
+          productData: transformProduct(product)
+        });
+        seenValues.add(suggestionValue);
+        count++;
+      }
+    }
+  }
+
+  // Non serve più ordinare perché i risultati sono già ordinati per priorità
+  return suggestions;
+};
+
 // Funzione per cercare prodotti per nome
 export const searchProductByName = async (searchTerm: string): Promise<ProductData[]> => {
   await ensureDatabaseLoaded();

@@ -36,7 +36,7 @@ export function useProductAnalysis() {
     
     try {
       console.log('⏱️ Adding delay before analysis...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Aumentato a 1.5 secondi per mostrare meglio la loading bar
       
       console.log('🔍 Calling analyzeProduct with:', input);
       const { product, analysis } = await analyzeProduct(input);

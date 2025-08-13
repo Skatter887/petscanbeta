@@ -71,6 +71,10 @@ const Header = () => {
 
   const navigateToAboutUs = () => {
     navigate('/chi-ce-dietro');
+    // Scroll to top after navigation
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   const navigateToHome = () => {
@@ -191,21 +195,89 @@ const Header = () => {
 
             {/* Scannerizza - Dynamic central button with enhanced effects */}
             <button
-              onClick={() => scrollToSection('scannerizza-form')}
-              className="group flex flex-col items-center justify-center transition-all duration-500 active:scale-90 touch-manipulation hover:scale-110 -mt-1"
-              style={{ WebkitTapHighlightColor: 'transparent' }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-orange-400 flex items-center justify-center mb-1 shadow-lg relative border border-white group-hover:shadow-2xl group-hover:from-green-500 group-hover:to-orange-500 transition-all duration-500 group-active:scale-90">
-                {/* Enhanced animated glow effect */}
-                <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-br from-green-400 to-orange-400 blur-sm opacity-30 group-hover:opacity-60 group-hover:blur-md transition-all duration-500 -z-10 animate-pulse"></div>
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Scan button clicked - navigating to homepage and opening scanner');
                 
-                {/* Rotating border effect */}
-                <div className="absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-20">
+                // Se non siamo sulla homepage, naviga prima alla homepage
+                if (window.location.pathname !== '/') {
+                  console.log('Navigating to homepage first');
+                  navigate('/');
+                  // Aspetta che la navigazione sia completata, poi scrolla all'inizio e apri scanner
+                  setTimeout(() => {
+                    try {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      // Dopo lo scroll, apri lo scanner
+                      setTimeout(() => {
+                        // Cerca il pulsante scan nella homepage e cliccalo
+                        const scanButton = document.querySelector('[data-scan-button]') || 
+                                         document.querySelector('button[onClick*="setShowScanner"]') ||
+                                         document.querySelector('button[aria-label="Scansiona barcode"]');
+                        if (scanButton) {
+                          console.log('Found scan button, clicking it');
+                          (scanButton as HTMLElement).click();
+                        } else {
+                          console.log('Scan button not found, opening scanner manually');
+                          // Fallback: ricarica la pagina per aprire lo scanner
+                          window.location.reload();
+                        }
+                      }, 500);
+                    } catch (error) {
+                      console.error('Scroll error after navigation:', error);
+                      window.scrollTo(0, 0);
+                    }
+                  }, 100);
+                } else {
+                  // Se siamo già sulla homepage, scrolla all'inizio e apri scanner
+                  console.log('Already on homepage, scrolling to top and opening scanner');
+                  try {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    // Dopo lo scroll, apri lo scanner
+                    setTimeout(() => {
+                      // Cerca il pulsante scan nella homepage e cliccalo
+                      const scanButton = document.querySelector('[data-scan-button]') || 
+                                       document.querySelector('button[onClick*="setShowScanner"]') ||
+                                       document.querySelector('button[aria-label="Scansiona barcode"]');
+                      if (scanButton) {
+                        console.log('Found scan button, clicking it');
+                        (scanButton as HTMLElement).click();
+                      } else {
+                        console.log('Scan button not found, opening scanner manually');
+                        // Fallback: ricarica la pagina per aprire lo scanner
+                        window.location.reload();
+                      }
+                    }, 500);
+                  } catch (error) {
+                    console.error('Scroll error:', error);
+                    // Fallback per browser più vecchi
+                    window.scrollTo(0, 0);
+                  }
+                }
+              }}
+              onTouchStart={(e) => {
+                console.log('Touch start on scan button');
+              }}
+              className="group flex flex-col items-center justify-center transition-all duration-500 active:scale-90 touch-manipulation hover:scale-110 -mt-1 relative z-50 p-2"
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                userSelect: 'none',
+                touchAction: 'manipulation',
+                minHeight: '60px',
+                minWidth: '60px'
+              }}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-orange-400 flex items-center justify-center mb-1 shadow-2xl relative border border-white transition-all duration-500 group-active:scale-90">
+                {/* Enhanced animated glow effect - always visible */}
+                <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-br from-green-400 to-orange-400 blur-md opacity-60 transition-all duration-500 -z-10 animate-pulse"></div>
+                
+                {/* Rotating border effect - always visible */}
+                <div className="absolute -inset-0.5 rounded-2xl opacity-100 transition-opacity duration-500 -z-20">
                   <div className="w-full h-full rounded-2xl bg-gradient-to-r from-green-400 via-orange-400 to-green-400 animate-spin-slow blur-sm"></div>
                 </div>
                 
-                {/* Premium scanner icon with micro-animation */}
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white group-hover:scale-110 transition-transform duration-300">
+                {/* Premium scanner icon with micro-animation - always visible */}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white scale-110 transition-transform duration-300">
                   <path d="M3 7V5a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   <path d="M17 3h2a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   <path d="M21 17v2a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -244,7 +316,7 @@ const Header = () => {
         </nav>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes spin-slow {
           from {
             transform: rotate(0deg);

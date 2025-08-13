@@ -9,8 +9,8 @@ interface HeroContentProps {
 
 const HeroContent: React.FC<HeroContentProps> = ({ onAnalyzeClick, onExamplesClick, isAnalysisActive = false }) => {
   return (
-    <div className="flex flex-col gap-1 md:gap-4 items-center text-center w-full hero-content-webapp">
-      <h1 className={`${isAnalysisActive ? 'text-2xl md:text-4xl' : 'text-4xl md:text-6xl'} font-black leading-none px-4 relative`}>
+    <div className="flex flex-col gap-0 md:gap-4 items-center text-center w-full hero-content-webapp" style={{ marginTop: 0, paddingTop: 0 }}>
+      <h1 className={`${isAnalysisActive ? 'text-xl md:text-4xl' : 'text-2xl md:text-6xl'} font-black leading-tight px-2 relative max-w-[400px] mx-auto`} style={{ marginTop: 0, paddingTop: 0 }}>
         <span className="inline-block">
           <span className="text-gray-900 animate-in fade-in duration-700">Il cibo che dai è</span>
           <br className="block md:hidden" />
@@ -34,7 +34,7 @@ const HeroContent: React.FC<HeroContentProps> = ({ onAnalyzeClick, onExamplesCli
           <span className="text-gray-900 animate-in fade-in duration-700 delay-700">?</span>
         </span>
       </h1>
-      <p className={`${isAnalysisActive ? 'text-sm md:text-lg' : 'text-base md:text-xl'} text-gray-700 max-w-2xl mx-auto leading-relaxed mt-[4vh]`}>
+      <p className={`${isAnalysisActive ? 'text-sm md:text-lg' : 'text-base md:text-xl'} text-gray-700 max-w-[380px] mx-auto leading-relaxed mt-0 md:mt-2 px-2`}>
         Scopri in <span className="font-semibold text-gray-800">pochi secondi</span> se l'alimentazione del tuo cane o gatto è{' '}
         <span className="font-medium text-green-600">sicura, adatta e salutare</span>.{' '}
         <span className="font-bold text-gray-900">Analisi con intelligenza artificiale</span>{' '}

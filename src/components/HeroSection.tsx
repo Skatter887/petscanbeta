@@ -4,13 +4,247 @@ import HeroStats from './HeroStats';
 import ProductEvaluationCard from './ProductAnalysisCard';
 import { useState, useEffect, useRef } from 'react';
 import { Search, ScanLine, X, Camera } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useProductAnalysis } from '@/hooks/useProductAnalysis';
+import { useAutocomplete } from '@/hooks/useAutocomplete';
 import BarcodeScanner from './BarcodeScanner';
 import ProductNotFoundModal from './ProductNotFoundModal';
 import AddProductModal from './AddProductModal';
 
 // Animazioni CSS personalizzate per le zampette decorative e barra di ricerca
 const pawAnimations = `
+  /* Classi personalizzate per dimensioni logo */
+  .w-26 { width: 6.5rem; }
+  .h-26 { height: 6.5rem; }
+  .w-39 { width: 9.75rem; }
+  .h-39 { height: 9.75rem; }
+
+  /* Layout ottimizzato per mobile normale (non web app) - Above the fold */
+  @media (max-width: 767px) {
+    :not(.standalone-mode) .hero-section-container {
+      padding-top: 0 !important;
+      padding-bottom: 6rem !important;
+      min-height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+    }
+    
+    :not(.standalone-mode) .hero-content-wrapper {
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+      gap: 0.5rem !important;
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+    }
+    
+    /* Logo container - ridotto ulteriormente */
+    :not(.standalone-mode) .hero-section-container > div:first-of-type {
+      margin: 0 !important;
+      padding: 0 !important;
+      transform: scale(0.8) !important;
+      margin-bottom: -20px !important;
+    }
+    
+    /* Contenuto principale - ben leggibile */
+    :not(.standalone-mode) .hero-content-webapp {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    :not(.standalone-mode) .hero-content-webapp h1 {
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 1.1 !important;
+      font-size: 2.25rem !important;
+    }
+    
+    :not(.standalone-mode) .hero-content-webapp p {
+      margin: 0 !important;
+      padding: 0.25rem 0.5rem 0.5rem 0.5rem !important;
+      font-size: 1rem !important;
+      line-height: 1.4 !important;
+    }
+    
+    /* Barra di ricerca mobile - compatta */
+    :not(.standalone-mode) #scannerizza-form {
+      margin: 0.1rem 0 !important;
+      z-index: 100 !important;
+      position: relative !important;
+      transform: scale(0.95) !important;
+    }
+    
+    /* HeroStats mobile - above the fold */
+    :not(.standalone-mode) .hero-stats-mobile {
+      margin: 0.3rem 0 1rem 0 !important;
+      z-index: 50 !important;
+      position: relative !important;
+      padding: 0 1rem !important;
+    }
+  }
+  
+  /* Regola aggiuntiva per browser mobile standard - layout compatto */
+  @media (max-width: 767px) and (display-mode: browser) {
+    .hero-section-container {
+      padding-top: 0 !important;
+      padding-bottom: 6rem !important;
+    }
+    
+    .hero-content-wrapper {
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+      gap: 0.5rem !important;
+    }
+    
+    .hero-content-webapp {
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    .hero-content-webapp p {
+      padding: 0.25rem 0.5rem 0.5rem 0.5rem !important;
+    }
+    
+    #scannerizza-form {
+      margin: 0.1rem 0 !important;
+      z-index: 100 !important;
+      transform: scale(0.95) !important;
+    }
+    
+    .hero-stats-mobile {
+      margin: 0.3rem 0 1rem 0 !important;
+      z-index: 50 !important;
+    }
+  }
+
+    /* Ottimizzazioni per iOS WebApp - layout migliorato */
+  @media (max-width: 430px) and (display-mode: standalone) {
+    .hero-section-container {
+      min-height: 100dvh !important;
+      padding-top: calc(env(safe-area-inset-top) + 1rem) !important;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 5rem) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      position: relative !important;
+    }
+   
+    .hero-content-wrapper {
+      padding-top: 1rem !important;
+      gap: 0 !important;
+      justify-content: flex-start !important;
+      flex: none !important;
+      min-height: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+    }
+   
+    .logo-webapp-higher {
+      max-width: 180px !important;
+      max-height: 180px !important;
+      width: 180px !important;
+      height: 180px !important;
+      z-index: 10 !important;
+      margin: 0 auto 0 auto !important;
+      padding: 0 !important;
+      flex-shrink: 0 !important;
+    }
+
+    .hero-content-webapp {
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      z-index: 20 !important;
+      position: relative !important;
+      text-align: center !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* Testo ingrandito per iOS WebApp */
+    .hero-content-webapp h1 {
+      font-size: 2.25rem !important;
+      line-height: 1.1 !important;
+      margin-bottom: 0 !important;
+      padding: 0 0.5rem !important;
+      max-width: 100% !important;
+      font-weight: 900 !important;
+    }
+
+    .hero-content-webapp p {
+      font-size: 1.125rem !important;
+      line-height: 1.4 !important;
+      margin-top: 0 !important;
+      margin-bottom: 1rem !important;
+      padding: 0 1rem !important;
+      max-width: 100% !important;
+      font-weight: 500 !important;
+    }
+
+    /* Form di ricerca distribuito meglio */
+    #scannerizza-form {
+      margin-top: 0 !important;
+      margin-bottom: 1rem !important;
+      z-index: 30 !important;
+      position: relative !important;
+      width: 100% !important;
+      max-width: 300px !important;
+      flex-shrink: 0 !important;
+    }
+   
+    .hero-stats-mobile {
+      margin-top: 0 !important;
+      margin-bottom: 1rem !important;
+      z-index: 40 !important;
+      position: relative !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* Statistiche più leggibili per iOS WebApp */
+    .hero-stats-mobile .text-base {
+      font-size: 1rem !important;
+      font-weight: 700 !important;
+    }
+    
+    .hero-stats-mobile div:last-child {
+      font-size: 0.875rem !important;
+      font-weight: 500 !important;
+    }
+
+    /* Assicura che il contenuto non venga coperto dalla dynamic island */
+    .ios-safe-top {
+      padding-top: calc(env(safe-area-inset-top) + 1rem) !important;
+    }
+
+    /* Layout distribuito meglio */
+    .content-distribution {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      min-height: auto !important;
+      max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 5rem) !important;
+      overflow: visible !important;
+    }
+
+    /* Prevenzione sovrapposizioni */
+    .prevent-overlap {
+      position: relative !important;
+      z-index: 50 !important;
+      background: white !important;
+      border-radius: 1rem !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Scanner navigation con safe area */
+    .scanner-nav-ios {
+      padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem) !important;
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(20px) !important;
+    }
+  }
+
   @keyframes pulse-slow {
     0%, 100% {
       opacity: 0.3;
@@ -102,6 +336,166 @@ const pawAnimations = `
     );
     pointer-events: none;
     z-index: -2;
+  }
+
+  /* Progress bar animation */
+  @keyframes progress-bar {
+    0% {
+      width: 0%;
+      background-position: 0% 50%;
+    }
+    25% {
+      width: 30%;
+      background-position: 25% 50%;
+    }
+    50% {
+      width: 60%;
+      background-position: 50% 50%;
+    }
+    75% {
+      width: 85%;
+      background-position: 75% 50%;
+    }
+    100% {
+      width: 100%;
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-progress-bar {
+    animation: progress-bar 2s ease-in-out infinite;
+    background-size: 200% 100%;
+  }
+
+  /* Subtle progress bar animation */
+  @keyframes subtle-progress {
+    0% {
+      width: 0%;
+      opacity: 0.8;
+    }
+    20% {
+      width: 25%;
+      opacity: 1;
+    }
+    50% {
+      width: 60%;
+      opacity: 1;
+    }
+    80% {
+      width: 90%;
+      opacity: 0.9;
+    }
+    100% {
+      width: 100%;
+      opacity: 0.8;
+    }
+  }
+
+  .animate-subtle-progress {
+    animation: subtle-progress 3s ease-in-out infinite;
+    background-size: 200% 100%;
+  }
+
+  /* Shimmer effect for loading bar */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .loading-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Improved spinner animation */
+  @keyframes spin-smooth {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .animate-spin-slow {
+    animation: spin-smooth 2s linear infinite;
+  }
+
+  /* Autocomplete animations */
+  @keyframes fadeInDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Animazioni per le zampette */
+  @keyframes paw-bounce {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes paw-wiggle {
+    0%, 100% {
+      transform: rotate(0deg) scale(1);
+    }
+    25% {
+      transform: rotate(-5deg) scale(1.05);
+    }
+    75% {
+      transform: rotate(5deg) scale(1.05);
+    }
+  }
+
+  .animate-paw-bounce {
+    animation: paw-bounce 1.5s ease-in-out infinite;
+  }
+
+  .animate-paw-wiggle {
+    animation: paw-wiggle 2s ease-in-out infinite;
+  }
+
+  .autocomplete-dropdown {
+    animation: fadeInDown 0.2s ease-out;
+  }
+
+  .autocomplete-suggestion {
+    transition: all 0.15s ease-in-out;
+  }
+
+  .autocomplete-suggestion:hover {
+    transform: translateX(2px);
   }
 `;
 
@@ -341,25 +735,16 @@ const generateDecorativePawPositions = () => {
 };
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('Tutte');
-  const [isLoading, setIsLoading] = useState(false);
+  // Rimosso isLoading locale - usiamo solo analysisLoading dal hook
   const [productImages, setProductImages] = useState<string[]>([]);
   const [showScanner, setShowScanner] = useState(false);
   const [productCount, setProductCount] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [productTitles, setProductTitles] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [isScannerActive, setIsScannerActive] = useState(false);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
-  const [productSuggestions, setProductSuggestions] = useState<{
-    label: string;
-    value: string;
-    type: 'brand-title' | 'title' | 'brand' | 'ean';
-    ean: number;
-    brand: string;
-    title: string;
-  }[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   // Stato per l'animazione delle zampette
   const [pawAnimationStep, setPawAnimationStep] = useState(0);
@@ -380,12 +765,58 @@ const HeroSection = () => {
     reset,
   } = useProductAnalysis();
 
+  // Hook per l'autocomplete
+  const {
+    suggestions,
+    isLoading: autocompleteLoading,
+    isOpen: showSuggestions,
+    selectedIndex,
+    search: searchSuggestions,
+    handleKeyDown: handleAutocompleteKeyDown,
+    selectSuggestion,
+    closeSuggestions,
+    setIsOpen: setShowSuggestions
+  } = useAutocomplete({
+    debounceMs: 150, // Più veloce e reattivo
+    minChars: 2,
+    maxSuggestions: 8
+  });
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Click outside handler per chiudere i suggerimenti
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      
+      // Controlla se il click è nell'input
+      if (inputRef.current && inputRef.current.contains(target)) {
+        return;
+      }
+      
+      // Controlla se il click è in un suggerimento
+      const suggestionElements = document.querySelectorAll('[data-autocomplete-suggestion]');
+      for (const suggestion of suggestionElements) {
+        if (suggestion.contains(target)) {
+          return; // Non chiudere se il click è su un suggerimento
+        }
+      }
+      
+      // Se arriviamo qui, il click è fuori dall'area di autocomplete
+  
+      closeSuggestions();
+    };
+
+    if (showSuggestions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSuggestions, closeSuggestions]);
 
   // Animazione delle zampette
   useEffect(() => {
@@ -422,215 +853,72 @@ const HeroSection = () => {
     return () => clearTimeout(initialDelay);
   }, [isMobile]);
 
+  // Carica il conteggio dei prodotti
   useEffect(() => {
     fetch('/data/petscan_main.json')
       .then(res => res.json())
       .then((data: any[]) => {
         setProductCount(data.length);
-        
-        // Genera suggerimenti migliorati dal database
-        const suggestions = data
-          .filter(p => p.title && p.brand && p.Ean)
-          .map(p => {
-            // Crea suggerimenti multipli per ogni prodotto
-            const suggestions = [];
-            
-            // Suggerimento con brand e titolo
-            if (p.brand && p.title) {
-              suggestions.push({
-              label: `${p.brand} - ${p.title}`,
-                value: `${p.brand} - ${p.title}`,
-                type: 'brand-title' as const,
-                ean: p.Ean,
-                brand: p.brand,
-                title: p.title
-              });
-            }
-            
-            // Suggerimento solo con titolo
-            if (p.title) {
-              suggestions.push({
-                label: p.title,
-                value: p.title,
-                type: 'title' as const,
-                ean: p.Ean,
-                brand: p.brand,
-                title: p.title
-              });
-            }
-            
-            // Suggerimento solo con brand
-            if (p.brand) {
-              suggestions.push({
-                label: p.brand,
-                value: p.brand,
-                type: 'brand' as const,
-                ean: p.Ean,
-                brand: p.brand,
-                title: p.title
-              });
-            }
-            
-            // Suggerimento con EAN
-            if (p.Ean) {
-              suggestions.push({
-                label: `EAN: ${p.Ean}`,
-                value: p.Ean.toString(),
-                type: 'ean' as const,
-                ean: p.Ean,
-                brand: p.brand,
-                title: p.title
-              });
-            }
-            
-            return suggestions;
-          })
-          .flat()
-          .filter((sugg, index, arr) => 
-            // Rimuovi duplicati basati su value
-            arr.findIndex(s => s.value === sugg.value) === index
-          );
-        
-        setProductSuggestions(suggestions);
       })
       .catch(error => {
         console.error('Errore nel caricamento del database:', error);
-        
-        // Fallback con dati di esempio per test
-        const sampleData = [
-          {
-            brand: "ALMO NATURE",
-            title: "almo nature Urinary Help Adult & Mature Cat 3 con Pesce, 3 con Pollo 6 x 70 g",
-            Ean: 8001154127065
-          },
-          {
-            brand: "ULTIMA",
-            title: "ultima Cat Sterilizzati Palline di Pelo Tacchino 440 g",
-            Ean: 8059149430072
-          },
-          {
-            brand: "GOURMET",
-            title: "PURINA GOURMET Mon Petit Filettini Intense cotti in Salsa",
-            Ean: 7613034453846
-          }
-        ];
-        
-        const suggestions = sampleData.map(p => [
-          {
-            label: `${p.brand} - ${p.title}`,
-            value: `${p.brand} - ${p.title}`,
-            type: 'brand-title' as const,
-            ean: p.Ean,
-            brand: p.brand,
-            title: p.title
-          },
-          {
-            label: p.brand,
-            value: p.brand,
-            type: 'brand' as const,
-            ean: p.Ean,
-            brand: p.brand,
-            title: p.title
-          },
-          {
-            label: p.title,
-            value: p.title,
-            type: 'title' as const,
-            ean: p.Ean,
-            brand: p.brand,
-            title: p.title
-          }
-        ]).flat();
-        
-        setProductSuggestions(suggestions);
-        setProductCount(sampleData.length);
+        setProductCount(3); // Fallback count
       });
   }, []);
-
-  // Chiudi suggerimenti se clicchi fuori
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const filteredSuggestions = search.length > 0
-    ? productSuggestions
-        .filter(sugg => {
-          const searchLower = search.toLowerCase();
-          const labelLower = sugg.label.toLowerCase();
-          const valueLower = sugg.value.toLowerCase();
-          
-          // Ricerca più intelligente
-          const matches = (
-            labelLower.includes(searchLower) ||
-            valueLower.includes(searchLower) ||
-            sugg.brand.toLowerCase().includes(searchLower) ||
-            sugg.title.toLowerCase().includes(searchLower) ||
-            sugg.ean.toString().includes(searchLower)
-          );
-          
-          return matches;
-        })
-        .sort((a, b) => {
-          // Priorità: EAN esatto > brand-title > title > brand
-          const searchLower = search.toLowerCase();
-          
-          // EAN esatto ha priorità massima
-          if (a.type === 'ean' && a.value === search) return -1;
-          if (b.type === 'ean' && b.value === search) return 1;
-          
-          // Poi brand-title
-          if (a.type === 'brand-title' && b.type !== 'brand-title') return -1;
-          if (b.type === 'brand-title' && a.type !== 'brand-title') return 1;
-          
-          // Poi title
-          if (a.type === 'title' && b.type !== 'title' && b.type !== 'brand-title') return -1;
-          if (b.type === 'title' && a.type !== 'title' && a.type !== 'brand-title') return 1;
-          
-          // Infine brand
-          return 0;
-        })
-        .slice(0, 10) // Aumento a 10 risultati
-    : [];
 
   // Genera traiettoria delle zampette
   const pawTrajectory = generateVerticalPawTrajectory(isMobile);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    // handleProductAnalysis gestisce il loading state automaticamente
     // Scroll al centro della pagina per il loading
     window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
     handleProductAnalysis(search);
   };
 
   const handleAnalyzeClick = () => {
-    setIsLoading(true);
-    // Scroll al centro della pagina per il loading
-    window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
-    handleProductAnalysis(search);
+    // Check if we're on mobile (since the search bar layout is different)
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+      // Su mobile, trova la barra di ricerca e centrala perfettamente nello schermo
+      const searchForm = document.getElementById('scannerizza-form');
+      if (searchForm) {
+        // Usa scrollIntoView con block: 'center' per centrare perfettamente
+        searchForm.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center',
+          inline: 'nearest'
+        });
+      }
+    } else {
+      // Su desktop, trova la barra di ricerca e posizionala in alto
+      const searchForm = document.getElementById('scannerizza-form-desktop');
+      if (searchForm) {
+        const elementRect = searchForm.getBoundingClientRect();
+        const absoluteElementTop = elementRect.top + window.pageYOffset;
+        // Posiziona la barra di ricerca a circa 20px dall'alto dello schermo
+        const targetPosition = absoluteElementTop - 20;
+        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+      }
+    }
   };
 
   const handleScan = (barcode: string) => {
-    console.log('🎯 HeroSection handleScan called with barcode:', barcode);
-    console.log('📱 Closing scanner and setting search value');
+
     
     setShowScanner(false);
     setSearch(barcode);
-    setIsLoading(true);
+    // handleProductAnalysis gestisce il loading state automaticamente
     
-    console.log('🔄 Starting product analysis for barcode:', barcode);
+
     // Scroll al centro della pagina per il loading
     window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
     
     // Chiama l'analisi del prodotto
     handleProductAnalysis(barcode);
-    console.log('✅ Product analysis called');
+
   };
 
   // Funzione per resettare il campo di ricerca
@@ -641,33 +929,30 @@ const HeroSection = () => {
 
   // Wrapper functions per resettare anche lo stato locale
   const handleNewSearchWrapper = () => {
-    setIsLoading(false); // Reset dello stato locale
+    // Il loading state è gestito dal hook useProductAnalysis
     setSearch(''); // Pulisce il campo di ricerca
     setShowSuggestions(false); // Nasconde i suggerimenti
     handleNewSearch(); // Chiama la funzione del hook
   };
 
   const handleCloseAddProductModalWrapper = () => {
-    setIsLoading(false); // Reset dello stato locale
+    // Il loading state è gestito dal hook useProductAnalysis
     setSearch(''); // Pulisce il campo di ricerca
     setShowSuggestions(false); // Nasconde i suggerimenti
     handleCloseAddProductModal(); // Chiama la funzione del hook
   };
 
-  // Reset loading quando l'analisi è completata
+  // Scroll automatico quando l'analisi è completata
   useEffect(() => {
     if (analysisResult) {
-      // Aggiungi un delay più lungo per mostrare meglio l'animazione
+      // Il loading state è gestito automaticamente dal hook useProductAnalysis
+      // Scroll alla scheda analisi per centrarla
       setTimeout(() => {
-        setIsLoading(false);
-        // Scroll alla scheda analisi per centrarla
-        setTimeout(() => {
-          const analysisCard = document.querySelector('[data-analysis-card]');
-          if (analysisCard) {
-            analysisCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 200);
-      }, 1500); // Aumentato da 100ms a 1500ms
+        const analysisCard = document.querySelector('[data-analysis-card]');
+        if (analysisCard) {
+          analysisCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
     }
   }, [analysisResult]);
 
@@ -740,15 +1025,21 @@ const HeroSection = () => {
         </div>
       )}
       
+
+
       {/* Contenuto normale - nascosto quando scanner è attivo */}
       {!showScanner && (
-        <section className="relative min-h-screen flex flex-col justify-between items-center px-2 md:px-4 py-0 md:py-16 pb-0 md:pb-16 bg-gradient-to-br from-yellow-200 via-orange-200 to-green-200 rounded-3xl shadow-xl overflow-hidden hero-section-container" style={{ paddingBottom: analysisResult ? '3rem' : '2rem' }}>
-          {/* Logo PetScan - posizionato più in alto */}
-          <div className={`md:hidden absolute ${showSuggestions || analysisResult ? 'top-0' : 'top-2'} left-1/2 transform -translate-x-1/2 z-30`} style={{ top: showSuggestions || analysisResult ? 'calc(0.1rem + env(safe-area-inset-top))' : 'calc(0.5rem + env(safe-area-inset-top))' }}>
+        <section className="relative min-h-screen flex flex-col justify-start md:justify-between items-center px-2 md:px-4 py-0 md:py-16 pb-0 md:pb-16 rounded-3xl shadow-xl overflow-hidden hero-section-container" style={{ 
+          paddingTop: 0,
+          paddingBottom: analysisResult ? '3rem' : '2rem',
+          background: 'radial-gradient(circle at center, #ffffff 0%, #d4f1ff 25%, #ffe6d9 50%, #e6fff6 75%, #f3e9ff 100%)'
+        }}>
+          {/* Logo PetScan - Posizionato correttamente per evitare sovrapposizioni */}
+          <div className={`md:hidden flex justify-center items-center w-full z-10`} style={{ marginTop: 0, marginBottom: 0 }}>
             <img 
               src="/logo_no_cont.png" 
               alt="PetScan Logo" 
-              className={`${showSuggestions || analysisResult ? 'w-32 h-32' : 'w-50 h-50'} object-contain transition-all duration-200 logo-webapp-higher`}
+              className={`${showSuggestions || analysisResult ? 'w-38 h-38' : 'w-44 h-44'} object-contain transition-all duration-200 logo-webapp-higher`}
             />
           </div>
 
@@ -780,9 +1071,9 @@ const HeroSection = () => {
             ))}
           </div>
 
-          <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-start flex-1 pt-16 md:pt-4 pb-0 md:pb-4 md:items-center md:justify-center md:text-center ${analysisResult ? 'gap-2' : 'gap-4'} md:gap-8 hero-content-wrapper`} style={{ paddingBottom: analysisResult ? '2rem' : '1rem', paddingLeft: analysisResult ? '0.5rem' : '1rem', paddingRight: analysisResult ? '0.5rem' : '1rem' }}>
-            {/* Hero Content (testo invariato) - spostato più in alto */}
-            <div className={`${analysisResult ? 'mt-4' : 'mt-0'} hero-content-higher`}>
+          <div className={`container mx-auto max-w-3xl relative z-20 flex flex-col items-center justify-start flex-1 pt-0 md:pt-4 pb-0 md:pb-4 md:items-center md:justify-center md:text-center gap-0 md:gap-8 hero-content-wrapper content-distribution`} style={{ paddingBottom: analysisResult ? '0.5rem' : '0', paddingLeft: analysisResult ? '0.5rem' : '1rem', paddingRight: analysisResult ? '0.5rem' : '1rem', paddingTop: 0, marginTop: 0 }}>
+            {/* Hero Content - ottimizzato per iOS WebApp */}
+            <div className="hero-content-webapp">
               <HeroContent 
                 onAnalyzeClick={handleAnalyzeClick}
                 onExamplesClick={() => {}}
@@ -790,15 +1081,15 @@ const HeroSection = () => {
               />
             </div>
             
-                         {/* Barra di ricerca */}
-             <div id="scannerizza-form" className="w-full md:hidden relative mt-[4vh] mb-[6vh]">
-              <div className="relative w-full max-w-xl mx-auto">
+            {/* Barra di ricerca - ottimizzata per iOS WebApp */}
+            <div id="scannerizza-form" className="w-full md:hidden relative">
+              <div className="relative w-full mx-auto">
                 {/* Animazione bordo miccia mobile */}
                 <div className="absolute inset-0 rounded-full search-border-animation" style={{ zIndex: 1 }} />
                 
                 <form
                   onSubmit={handleSubmit}
-                  className={`relative w-full flex flex-row items-center gap-0 shadow-lg border border-white/40 overflow-visible bg-white/90 rounded-full py-3 px-2 backdrop-blur-md min-h-[60px] !transition-all !duration-200`}
+                                     className={`relative w-full flex flex-row items-center gap-0 shadow-lg border border-white/40 overflow-visible bg-white/90 rounded-full py-3 px-2 backdrop-blur-md min-h-[56px] !transition-all !duration-200`}
                   style={{
                     WebkitAppearance: 'none',
                     WebkitTapHighlightColor: 'transparent',
@@ -808,34 +1099,52 @@ const HeroSection = () => {
                     zIndex: 2,
                   }}
                 >
-                {/* Scanner icon sinistra */}
-                <button
-                  type="button"
-                  className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-                  onClick={() => setShowScanner(true)}
+                {/* Scanner icon sinistra - ottimizzato per above-the-fold */}
+                                 <button
+                   type="button"
+                   data-scan-button="true"
+                   className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  onClick={() => {
+                    console.log('Scan button clicked, analysisResult:', analysisResult, 'search:', search);
+                    
+                    // SEMPRE ricarica la pagina quando si clicca su scan dopo un'analisi
+                    // Questo garantisce che tutto sia pulito e pronto per una nuova ricerca
+                    window.location.reload();
+                  }}
                   aria-label="Scansiona barcode"
                   tabIndex={0}
                   style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
                 >
-                  <ScanLine className="w-7 h-7" style={{ display: 'block' }} />
+                  <ScanLine className="w-5 h-5" style={{ display: 'block' }} />
                 </button>
                 
-                {/* Input di ricerca */}
+                {/* Input di ricerca - ottimizzato per above-the-fold */}
                 <input
+                  ref={inputRef}
                   type="text"
                   inputMode="text"
-                  className="flex-1 bg-transparent outline-none px-3 py-2 text-base rounded-full placeholder-gray-400 min-w-0"
+                  className="flex-1 bg-transparent outline-none px-2 py-1 text-sm rounded-full placeholder-gray-400 min-w-0"
                   placeholder="Inserisci barcode o nome prodotto"
                   value={search}
                   onChange={e => {
-                    setSearch(e.target.value);
-                    setShowSuggestions(true);
+                    const value = e.target.value;
+                    setSearch(value);
+                    searchSuggestions(value);
+                  }}
+                  onKeyDown={e => {
+                    const selectedSuggestion = handleAutocompleteKeyDown(e);
+                    if (selectedSuggestion) {
+                      setSearch(selectedSuggestion.value);
+                      // Scroll al centro della pagina per il loading
+                      window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
+                      handleProductAnalysis(selectedSuggestion.ean.toString());
+                    }
                   }}
                   disabled={analysisLoading}
                   autoComplete="off"
                   style={{
                     WebkitAppearance: 'none',
-                    fontSize: '1.1rem',
+                    fontSize: '0.9rem',
                     lineHeight: 1.2,
                     border: 'none',
                     outline: 'none',
@@ -843,7 +1152,7 @@ const HeroSection = () => {
                     background: 'transparent',
                     width: '100%',
                     minWidth: 0,
-                    padding: '0.7em 0.5em',
+                    padding: '0.4em 0.3em',
                     borderRadius: '9999px',
                     MozOsxFontSmoothing: 'grayscale',
                     WebkitFontSmoothing: 'antialiased',
@@ -855,35 +1164,139 @@ const HeroSection = () => {
                     e.target.style.fontSize = '16px';
                   }}
                   onBlur={e => {
-                    e.target.style.fontSize = '1.1rem';
+                    e.target.style.fontSize = '0.9rem';
+                    // Non chiudiamo i suggerimenti qui - lasciamo che il click outside handler se ne occupi
                   }}
                 />
                 
-                {/* Search icon destra */}
-                <button
-                  type="submit"
-                  className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                {/* Search icon destra - ottimizzato per above-the-fold */}
+                                 <button
+                   type="submit"
+                   className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
                   disabled={analysisLoading || !search.trim()}
                   aria-label="Cerca"
                   tabIndex={0}
                   style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
                 >
-                  <Search className="w-7 h-7" style={{ display: 'block' }} />
+                  <Search className="w-5 h-5" style={{ display: 'block' }} />
                 </button>
               </form>
+              
+                            {/* Mobile Autocomplete suggestions - FUORI dal form per evitare conflitti */}
+              {showSuggestions && suggestions.length > 0 && !showScanner && (
+                <div 
+                  className="absolute left-0 top-full w-full bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64 mx-auto autocomplete-dropdown"
+                  style={{ marginTop: '1px' }}
+                >
+                  {suggestions.map((suggestion, idx) => (
+                    <div
+                      key={`mobile-${suggestion.type}-${suggestion.ean}-${idx}`}
+                      data-autocomplete-suggestion
+                      className={`w-full text-left px-4 py-3 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 flex flex-col cursor-pointer autocomplete-suggestion ${
+                        selectedIndex === idx ? 'bg-green-50 border-green-200' : 'hover:bg-gray-100'
+                      }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const selected = selectSuggestion(suggestion);
+                        setSearch(selected.value);
+                        
+                        // Scroll al centro della pagina per il loading
+                        window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
+                        
+                        handleProductAnalysis(selected.ean.toString());
+                      }}
+                      style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+                    >
+                      <div className="font-medium text-gray-900 text-xs">
+                        {suggestion.label}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
+                        <span className="text-xs">{suggestion.brand}</span>
+                        <span className="text-gray-400 text-xs">EAN: {suggestion.ean}</span>
+                      </div>
+                      {suggestion.type === 'ean' && (
+                        <div className="text-xs text-blue-600 mt-1">
+                          🔗 Match barcode
+                        </div>
+                      )}
+                      {suggestion.type === 'brand' && (
+                        <div className="text-xs text-green-600 mt-1">
+                          🏷️ Match brand
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {autocompleteLoading && (
+                    <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                      Caricamento suggerimenti...
+                    </div>
+                  )}
+                </div>
+              )}
               </div>
+            </div>
+
+            {/* MOBILE LOADING BAR - Posizionata subito dopo la ricerca per essere visibile */}
+            {analysisLoading && (
+              <div className="md:hidden w-full mt-6 px-4">
+                <style>{pawAnimations}</style>
+                
+                <div className="relative w-full">
+                  {/* Background bar - elegante e sottile */}
+                  <div className="w-full h-2 bg-gray-200/60 rounded-full overflow-hidden shadow-sm relative">
+                    {/* Animated progress - elegante */}
+                    <div className="h-full bg-gradient-to-r from-green-400 via-green-500 to-orange-400 rounded-full animate-subtle-progress relative">
+                      {/* Shimmer effect */}
+                      <div className="absolute inset-0 loading-shimmer rounded-full"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Mobile text indicator con zampette */}
+                  <div className="flex items-center justify-center mt-4 space-x-3">
+                    {/* Zampetta sinistra */}
+                    <div className="w-6 h-6 text-green-500 animate-paw-bounce">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                        {/* Zampetta del cane/gatto */}
+                        <circle cx="8" cy="7" r="2"/>
+                        <circle cx="16" cy="7" r="2"/>
+                        <circle cx="6" cy="12" r="1.5"/>
+                        <circle cx="18" cy="12" r="1.5"/>
+                        <ellipse cx="12" cy="16" rx="4" ry="3"/>
+                      </svg>
+                    </div>
+                    
+                    <span className="text-base text-gray-800 font-bold">
+                      Analizzando prodotto...
+                    </span>
+                    
+                    {/* Zampetta destra */}
+                    <div className="w-6 h-6 text-orange-500 animate-paw-wiggle" style={{ animationDelay: '0.5s' }}>
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                        {/* Zampetta del cane/gatto */}
+                        <circle cx="8" cy="7" r="2"/>
+                        <circle cx="16" cy="7" r="2"/>
+                        <circle cx="6" cy="12" r="1.5"/>
+                        <circle cx="18" cy="12" r="1.5"/>
+                        <ellipse cx="12" cy="16" rx="4" ry="3"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Statistiche - compatte per iOS WebApp */}
+            <div className="w-full md:hidden flex justify-center hero-stats-mobile">
+              <HeroStats />
             </div>
           </div>
         </section>
       )}
 
-      {/* Statistiche centrate */}
-      <div className="w-full flex justify-center md:mt-8">
-        <HeroStats />
-      </div>
-
       {/* Barra di ricerca desktop - visibile solo su desktop */}
-      <div className="relative hidden md:block w-full max-w-lg mx-auto mt-8 mb-8">
+      <div id="scannerizza-form-desktop" className="relative hidden md:block w-full max-w-lg mx-auto mt-8 mb-8">
         {/* Animazione bordo miccia */}
         <div 
           className={`absolute inset-0 ${showScanner ? 'rounded-3xl' : 'rounded-full'} search-border-animation`}
@@ -909,8 +1322,15 @@ const HeroSection = () => {
         {!showScanner && (
           <button
             type="button"
+            data-scan-button="true"
             className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-3 focus:outline-none focus:ring-2 focus:ring-green-400"
-            onClick={() => setShowScanner(true)}
+            onClick={() => {
+              console.log('Desktop scan button clicked, analysisResult:', analysisResult, 'search:', search);
+              
+              // SEMPRE ricarica la pagina quando si clicca su scan dopo un'analisi
+              // Questo garantisce che tutto sia pulito e pronto per una nuova ricerca
+              window.location.reload();
+            }}
             aria-label="Scansiona barcode"
             tabIndex={0}
             style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
@@ -942,14 +1362,25 @@ const HeroSection = () => {
             </div>
           ) : (
             <input
+              ref={inputRef}
               type="text"
               inputMode="text"
               className="flex-1 bg-transparent outline-none px-4 py-2 text-2xl rounded-full placeholder-gray-400 min-w-0"
               placeholder="Inserisci barcode o nome prodotto"
               value={search}
-              onChange={e => {
-                setSearch(e.target.value);
-                setShowSuggestions(true);
+                                onChange={e => {
+                    const value = e.target.value;
+                    setSearch(value);
+                    searchSuggestions(value);
+                  }}
+              onKeyDown={e => {
+                const selectedSuggestion = handleAutocompleteKeyDown(e);
+                if (selectedSuggestion) {
+                  setSearch(selectedSuggestion.value);
+                  // Scroll al centro della pagina per il loading
+                  window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
+                  handleProductAnalysis(selectedSuggestion.ean.toString());
+                }
               }}
               disabled={analysisLoading}
               autoComplete="off"
@@ -976,6 +1407,7 @@ const HeroSection = () => {
               }}
               onBlur={e => {
                 e.target.style.fontSize = '1.1rem';
+                // Non chiudiamo i suggerimenti qui - lasciamo che il click outside handler se ne occupi
               }}
             />
           )}
@@ -993,64 +1425,117 @@ const HeroSection = () => {
             <Search className="w-8 h-8" style={{ display: 'block' }} />
           </button>
         )}
-        {/* Autocomplete suggestions */}
-        {showSuggestions && filteredSuggestions.length > 0 && !showScanner && (
-          <div 
-            ref={suggestionsRef} 
-            className="absolute left-0 top-full w-full max-w-lg bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64"
-          >
-            {filteredSuggestions.map((suggestion, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className="w-full text-left px-4 py-3 hover:bg-gray-100 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 transition-colors flex flex-col"
-                onClick={() => {
-                  // Per l'analisi usa sempre l'EAN
-                  const searchValue = suggestion.type === 'ean' ? suggestion.value : suggestion.ean.toString();
-                  setSearch(suggestion.value);
-                  setIsLoading(true);
-                  // Scroll al centro della pagina per il loading
-                  window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
-                  handleProductAnalysis(searchValue); // Chiamo l'analisi prima
-                  setShowSuggestions(false); // Poi nascondo i suggerimenti
-                }}
-                tabIndex={0}
-                style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-              >
-                <div className="font-medium text-gray-900">
-                  {suggestion.type === 'ean' ? `EAN: ${suggestion.value}` : suggestion.label}
-                </div>
-                {suggestion.type !== 'ean' && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    {suggestion.brand} • EAN: {suggestion.ean}
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
       </form>
+      
+      {/* Autocomplete suggestions - FUORI dal form per evitare conflitti */}
+
+      {showSuggestions && suggestions.length > 0 && !showScanner && (
+        <div 
+          className="absolute left-0 top-full w-full max-w-lg bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64 autocomplete-dropdown"
+          style={{ marginTop: '1px' }}
+        >
+          {suggestions.map((suggestion, idx) => (
+            <div
+              key={`desktop-${suggestion.type}-${suggestion.ean}-${idx}`}
+              data-autocomplete-suggestion
+              className={`w-full text-left px-4 py-3 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 flex flex-col cursor-pointer autocomplete-suggestion ${
+                selectedIndex === idx ? 'bg-green-50 border-green-200' : 'hover:bg-gray-100'
+              }`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const selected = selectSuggestion(suggestion);
+                setSearch(selected.value);
+                
+                // Scroll al centro della pagina per il loading
+                window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
+                
+                handleProductAnalysis(selected.ean.toString());
+              }}
+              style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
+            >
+              <div className="font-medium text-gray-900">
+                {suggestion.label}
+              </div>
+              <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
+                <span>{suggestion.brand}</span>
+                <span className="text-gray-400">EAN: {suggestion.ean}</span>
+              </div>
+              {suggestion.type === 'ean' && (
+                <div className="text-xs text-blue-600 mt-1">
+                  🔗 Match barcode
+                </div>
+              )}
+              {suggestion.type === 'brand' && (
+                <div className="text-xs text-green-600 mt-1">
+                  🏷️ Match brand
+                </div>
+              )}
+            </div>
+          ))}
+          {autocompleteLoading && (
+            <div className="px-4 py-3 text-sm text-gray-500 text-center">
+              Caricamento suggerimenti...
+            </div>
+          )}
+        </div>
+      )}
       </div>
 
-      {/* Loading Component */}
-      {(isLoading || analysisLoading) && (
-        <div className="w-full flex flex-col items-center justify-center py-12">
+      {/* Statistiche - solo desktop, posizionate sotto la barra di ricerca */}
+      <div className="w-full hidden md:flex justify-center mt-5 mb-4">
+        <HeroStats />
+      </div>
+
+      {/* Subtle Loading Bar - appears under search when analyzing */}
+      {analysisLoading && (
+        <div className="w-full mt-6 mb-8">
           <style>{pawAnimations}</style>
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <div className="w-16 h-16 border-4 border-green-200 border-t-green-500 rounded-full animate-spin-slow"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl">🐾</span>
+          
+
+
+          {/* Desktop loading bar */}
+          <div className="hidden md:block w-full max-w-lg mx-auto px-4">
+            <div className="relative">
+              {/* Background bar */}
+              <div className="w-full h-1.5 bg-gray-200/60 rounded-full overflow-hidden shadow-sm relative">
+                {/* Animated progress */}
+                <div className="h-full bg-gradient-to-r from-green-400 via-green-500 to-orange-400 rounded-full animate-subtle-progress relative">
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 loading-shimmer rounded-full"></div>
                 </div>
               </div>
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Analizzando il prodotto...
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Stiamo valutando la qualità nutrizionale
-                </p>
+              
+              {/* Desktop text indicator con zampette */}
+              <div className="flex items-center justify-center mt-4 space-x-3">
+                {/* Zampetta sinistra */}
+                <div className="w-5 h-5 text-green-400 animate-paw-bounce">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                    {/* Zampetta del cane/gatto */}
+                    <circle cx="8" cy="7" r="2"/>
+                    <circle cx="16" cy="7" r="2"/>
+                    <circle cx="6" cy="12" r="1.5"/>
+                    <circle cx="18" cy="12" r="1.5"/>
+                    <ellipse cx="12" cy="16" rx="4" ry="3"/>
+                  </svg>
+                </div>
+                
+                <span className="text-sm text-gray-600 font-medium">
+                  Analizzando prodotto...
+                </span>
+                
+                {/* Zampetta destra */}
+                <div className="w-5 h-5 text-orange-400 animate-paw-wiggle" style={{ animationDelay: '0.5s' }}>
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+                    {/* Zampetta del cane/gatto */}
+                    <circle cx="8" cy="7" r="2"/>
+                    <circle cx="16" cy="7" r="2"/>
+                    <circle cx="6" cy="12" r="1.5"/>
+                    <circle cx="18" cy="12" r="1.5"/>
+                    <ellipse cx="12" cy="16" rx="4" ry="3"/>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>

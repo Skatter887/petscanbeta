@@ -1,65 +1,144 @@
-
-import { Card, CardContent } from "./ui/card";
-import { Shield, Award, Star, Heart } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { CheckCircle, XCircle, Zap, Leaf } from "lucide-react";
 
 const ProductExamples = () => {
   const products = [
     {
       name: "Royal Canin Adult",
       brand: "Royal Canin",
-      grade: "A",
       score: 85,
-      goodPoints: ["Proteine di qualità", "Senza coloranti artificiali"],
-      concerns: ["Contiene cereali"],
-      suitableFor: "Cani adulti di taglia media",
-      color: "green",
+      evaluationStatus: 'approved' as const,
+      evaluationLabel: "APPROVATO",
+      nutritionalValues: [
+        { label: "Proteine", value: 26, status: 'excellent' as const, icon: "protein" },
+        { label: "Grassi", value: 14, status: 'good' as const, icon: "fat" },
+        { label: "Fibre", value: 3.4, status: 'good' as const, icon: "fiber" },
+        { label: "Ceneri", value: 7.2, status: 'fair' as const, icon: "ash" },
+        { label: "Umidità", value: 9.5, status: 'excellent' as const, icon: "moisture" }
+      ],
+      recommendation: "Ottima scelta per cani adulti di taglia media. Formula bilanciata con proteine di alta qualità.",
       image: "/lovable-uploads/233a9caf-acb7-4486-8261-786d974aa4a5.png",
       type: "cane"
     },
     {
       name: "Hill's Science Diet",
       brand: "Hill's",
-      grade: "B+",
       score: 78,
-      goodPoints: ["Formulazione veterinaria", "Antiossidanti naturali"],
-      concerns: ["Prezzo elevato", "Conservanti BHA/BHT"],
-      suitableFor: "Cani con problemi digestivi",
-      color: "blue",
+      evaluationStatus: 'could-be-better' as const,
+      evaluationLabel: "POTREBBE ESSERE MIGLIORE",
+      nutritionalValues: [
+        { label: "Proteine", value: 22, status: 'good' as const, icon: "protein" },
+        { label: "Grassi", value: 15, status: 'good' as const, icon: "fat" },
+        { label: "Fibre", value: 2.8, status: 'fair' as const, icon: "fiber" },
+        { label: "Ceneri", value: 6.5, status: 'good' as const, icon: "ash" },
+        { label: "Umidità", value: 10, status: 'excellent' as const, icon: "moisture" }
+      ],
+      recommendation: "Prodotto accettabile con formulazione veterinaria, ma esistono alternative con ingredienti più naturali.",
       image: "/lovable-uploads/fcc92b02-aaac-410b-a57b-0a36b2439a8b.png",
       type: "cane"
     },
     {
       name: "Purina Felix",
       brand: "Purina",
-      grade: "C",
-      score: 65,
-      goodPoints: ["Economico", "Appetibile"],
-      concerns: ["Molti conservanti", "Sottoprodotti", "Coloranti artificiali"],
-      suitableFor: "Gatti adulti sani (uso occasionale)",
-      color: "orange",
+      score: 45,
+      evaluationStatus: 'not-approved' as const,
+      evaluationLabel: "NON APPROVATO",
+      nutritionalValues: [
+        { label: "Proteine", value: 13, status: 'poor' as const, icon: "protein" },
+        { label: "Grassi", value: 4, status: 'poor' as const, icon: "fat" },
+        { label: "Fibre", value: 0.5, status: 'poor' as const, icon: "fiber" },
+        { label: "Ceneri", value: 2.5, status: 'fair' as const, icon: "ash" },
+        { label: "Umidità", value: 82, status: 'poor' as const, icon: "moisture" }
+      ],
+      recommendation: "Questo prodotto non è raccomandato per il tuo pet. Ti consigliamo di scegliere un'alternativa con migliori valori nutrizionali.",
       image: "/lovable-uploads/02bc290b-6eab-43aa-a59d-903d9e4cad84.png",
       type: "gatto"
     },
     {
       name: "Orijen Adult Dog",
       brand: "Orijen",
-      grade: "A+",
       score: 95,
-      goodPoints: ["Ingredienti freschi", "Alto contenuto proteico", "Senza cereali"],
-      concerns: ["Prezzo premium"],
-      suitableFor: "Cani attivi di tutte le età",
-      color: "green",
+      evaluationStatus: 'approved' as const,
+      evaluationLabel: "APPROVATO",
+      nutritionalValues: [
+        { label: "Proteine", value: 38, status: 'excellent' as const, icon: "protein" },
+        { label: "Grassi", value: 18, status: 'excellent' as const, icon: "fat" },
+        { label: "Fibre", value: 4, status: 'excellent' as const, icon: "fiber" },
+        { label: "Ceneri", value: 8, status: 'good' as const, icon: "ash" },
+        { label: "Umidità", value: 12, status: 'excellent' as const, icon: "moisture" }
+      ],
+      recommendation: "Eccellente! Ingredienti freschi e alto contenuto proteico. Perfetto per cani attivi di tutte le età.",
       image: "/lovable-uploads/2c597613-c8a3-440a-9f97-06e814932fe9.png",
       type: "cane"
     }
   ];
 
-  const getGradeGradient = (color: string) => {
-    switch (color) {
-      case "green": return "bg-gradient-to-br from-green-400 via-green-500 to-green-600";
-      case "blue": return "bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600";
-      case "orange": return "bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600";
-      default: return "bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600";
+  // Helper functions matching the real ProductAnalysisCard
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'excellent': return 'bg-primary';
+      case 'good': return 'bg-secondary';
+      case 'fair': return 'bg-accent';
+      case 'poor': return 'bg-muted';
+      default: return 'bg-muted';
+    }
+  };
+
+  const getEvaluationBadgeClass = (status: 'approved' | 'could-be-better' | 'not-approved') => {
+    switch (status) {
+      case 'approved': return 'bg-green-500 hover:bg-green-600 text-white border-green-500';
+      case 'could-be-better': return 'bg-orange-500 hover:bg-orange-600 text-white border-orange-500';
+      case 'not-approved': return 'bg-red-500 hover:bg-red-600 text-white border-red-500';
+      default: return '';
+    }
+  };
+
+  const getEvaluationIcon = (status: 'approved' | 'could-be-better' | 'not-approved') => {
+    switch (status) {
+      case 'approved': return <CheckCircle className="w-4 h-4 mr-1" />;
+      case 'could-be-better': return <Zap className="w-4 h-4 mr-1" />;
+      case 'not-approved': return <XCircle className="w-4 h-4 mr-1" />;
+      default: return null;
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'excellent': return 'Eccellente';
+      case 'good': return 'Buono';
+      case 'fair': return 'Discreto';
+      case 'poor': return 'Scarso';
+      default: return 'N/A';
+    }
+  };
+
+  const getIconForNutrient = (icon: string) => {
+    switch (icon) {
+      case 'protein': return '💪';
+      case 'fat': return '🥑';
+      case 'fiber': return '🥦';
+      case 'ash': return '🧱';
+      case 'moisture': return '💧';
+      default: return '📊';
+    }
+  };
+
+  const getProgressColor = (evaluationStatus: 'approved' | 'could-be-better' | 'not-approved') => {
+    switch (evaluationStatus) {
+      case 'approved': return '#22c55e';
+      case 'could-be-better': return '#f97316';
+      case 'not-approved': return '#ef4444';
+      default: return '#ef4444';
+    }
+  };
+
+  const getScoreColor = (evaluationStatus: 'approved' | 'could-be-better' | 'not-approved') => {
+    switch (evaluationStatus) {
+      case 'approved': return '#22c55e';
+      case 'could-be-better': return '#f97316';
+      case 'not-approved': return '#ef4444';
+      default: return '#ef4444';
     }
   };
 
@@ -73,7 +152,7 @@ const ProductExamples = () => {
   return (
     <section id="prodotti" className="py-24 px-4 bg-gradient-to-b from-slate-50 to-white">
       <div className="container mx-auto max-w-7xl">
-        {/* Header moderno */}
+        {/* Header */}
         <div className="text-center mb-20">
           <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-semibold mb-6 shadow-sm backdrop-blur-sm">
             <span className="text-lg">🔬</span>
@@ -87,192 +166,301 @@ const ProductExamples = () => {
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
-          I nostri algoritmi di AI e il processo di peer-review certificato hanno analizzato centinaia di prodotti.
+            I nostri algoritmi di AI e il processo di peer-review certificato hanno analizzato centinaia di prodotti.
             <br className="hidden sm:block" />
             Scopri cosa rende davvero sicuro il cibo del tuo amico peloso.
           </p>
         </div>
 
-        {/* Grid di prodotti - Design Hero Style */}
+        {/* Grid di prodotti - Layout identico al vero ProductAnalysisCard */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          {products.map((product, idx) => (
-            <Card key={idx} className="group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white via-white to-orange-50/30 backdrop-blur-sm hover:bg-white">
-              {/* Decorative background elements - come nella Hero */}
-              <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-                <div className="absolute bg-gradient-to-br from-orange-200/20 to-orange-300/20 rounded-full mix-blend-multiply filter blur-2xl opacity-40" style={{
-                  top: '5%',
-                  left: '5%',
-                  width: '30%',
-                  height: '30%'
-                }}></div>
-                <div className="absolute bg-gradient-to-br from-green-200/20 to-green-300/20 rounded-full mix-blend-multiply filter blur-2xl opacity-40" style={{
-                  top: '20%',
-                  right: '10%',
-                  width: '25%',
-                  height: '25%'
-                }}></div>
-                <div className="absolute bg-gradient-to-br from-blue-200/20 to-blue-300/20 rounded-full mix-blend-multiply filter blur-2xl opacity-40" style={{
-                  bottom: '10%',
-                  left: '20%',
-                  width: '35%',
-                  height: '35%'
-                }}></div>
-              </div>
+          {products.map((product, idx) => {
+            const circumference = 2 * Math.PI * 40;
+            const strokeDasharray = circumference;
+            const strokeDashoffset = circumference - (product.score / 100) * circumference;
 
-              {/* Decorative corners - come nella Hero */}
-              <div className="absolute top-0 right-0 w-14 h-14 bg-gradient-to-bl from-orange-100/40 to-transparent rounded-bl-2xl"></div>
-              <div className="absolute bottom-0 left-0 w-10 h-10 bg-gradient-to-tr from-green-100/40 to-transparent rounded-tr-2xl"></div>
-
-              <CardContent className="p-6 relative z-10">
-                {/* Header con immagine e grade - Layout Hero Style */}
-                <div className="flex items-start justify-between mb-6">
-                  {/* Prodotto info con immagine */}
-                  <div className="flex items-start space-x-4">
-                    <div className="relative group">
-                      <div className="w-16 h-16 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 rounded-xl flex items-center justify-center p-1 transition-all duration-500 shadow-lg group-hover:scale-105">
+            return (
+              <div key={idx} className="w-full">
+                <Card className="w-full max-w-none mx-auto animate-fade-in" style={{ padding: 0, margin: '0 auto' }}>
+                  <CardHeader className="text-center space-y-2 px-0" style={{ padding: '1rem 1rem 0.5rem 1rem' }}>
+                    <div className="flex items-center justify-center space-x-3">
+                      {product.image && (
                         <img 
                           src={product.image} 
-                          alt={product.name} 
-                          className="w-full h-full object-cover rounded-lg transition-all duration-500 group-hover:scale-105" 
+                          alt={product.name}
+                          className="w-12 h-12 rounded-full object-cover shadow-lg border-2 border-gray-100"
                         />
-                      </div>
-                      <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-lg">
-                        <Shield className="w-3 h-3 text-white" />
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="text-xl font-bold text-gray-900 leading-tight">{product.name}</h3>
-                        <Award className="w-4 h-4 text-orange-500" />
-                      </div>
-                      <p className="text-gray-600 text-sm font-medium mb-1">{product.brand}</p>
-                      <div className="flex items-center space-x-2">
-                        <Heart className="w-3 h-3 text-pink-500" />
-                        <p className="text-gray-500 text-xs">{product.type === 'cane' ? '🐕' : '🐱'} {product.type}</p>
+                      )}
+                      <div className="text-center">
+                        <CardTitle className="text-lg font-bold text-gray-900 leading-tight mb-1">
+                          {product.name}
+                        </CardTitle>
+                        <div className="mb-1">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border border-green-200">
+                            {product.brand}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Grade Score - Hero Style */}
-                  <div className="relative group">
-                    <div className={`h-16 w-16 ${getGradeGradient(product.color)} rounded-xl shadow-lg transition-all duration-500 flex flex-col items-center justify-center group-hover:scale-105 group-hover:shadow-xl relative overflow-hidden`}>
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-transparent rounded-xl"></div>
-                      <div className="absolute inset-0 bg-gradient-to-tl from-black/10 to-transparent rounded-xl"></div>
-                      <div className="relative z-10 text-center">
-                        <div className="text-white font-bold text-lg leading-none mb-0.5 drop-shadow">{product.grade}</div>
-                        <div className="text-white/95 font-semibold text-xs leading-none">{product.score}/100</div>
+                    {/* Circular Progress */}
+                    <div className="flex items-center justify-center space-x-3">
+                      <div className="relative">
+                        <svg className="w-20 h-20 transform -rotate-90">
+                          <circle
+                            cx="40"
+                            cy="40"
+                            r="32"
+                            stroke="hsl(var(--muted))"
+                            strokeWidth="5"
+                            fill="none"
+                          />
+                          <circle
+                            cx="40"
+                            cy="40"
+                            r="32"
+                            strokeWidth="5"
+                            fill="none"
+                            strokeDasharray={strokeDasharray}
+                            strokeDashoffset={strokeDashoffset}
+                            strokeLinecap="round"
+                            stroke={getProgressColor(product.evaluationStatus)}
+                            className="transition-all duration-1000 ease-out"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-xl font-bold" style={{ color: getScoreColor(product.evaluationStatus) }}>
+                            {product.score}
+                          </span>
+                        </div>
                       </div>
-                      <Star className="absolute top-1 right-1 w-2.5 h-2.5 text-white/40" />
-                      <div className="absolute bottom-1 left-1 w-1 h-1 bg-white/50 rounded-full"></div>
+                      
+                      <div className="text-center">
+                        <div className="text-2xl font-bold" style={{ color: getScoreColor(product.evaluationStatus) }}>
+                          {product.score}/100
+                        </div>
+                        <Badge 
+                          className={`mt-1 ${getEvaluationBadgeClass(product.evaluationStatus)}`}
+                        >
+                          {getEvaluationIcon(product.evaluationStatus)}
+                          {product.evaluationLabel}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </CardHeader>
 
-                {/* Evaluations - Hero Style compatto */}
-                <div className="bg-gradient-to-r from-gray-50/80 to-white/80 backdrop-blur-sm rounded-xl p-4 mb-4 border border-gray-100/40 shadow-inner">
-                  <div className="space-y-3">
-                    {/* Punti di forza */}
+                  <CardContent className="space-y-4 px-0" style={{ padding: '0 1rem 0.5rem 1rem' }}>
+                    {/* Nutritional Analysis */}
                     <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <h4 className="font-semibold text-green-800 text-sm">Punti di forza</h4>
-                      </div>
-                      <div className="space-y-1">
-                        {product.goodPoints.map((point, i) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <span className="w-1 h-1 bg-green-500 rounded-full mt-2 flex-shrink-0"></span>
-                            <span className="text-green-700 font-medium text-xs leading-relaxed">{point}</span>
+                      <h3 className="text-base font-semibold text-foreground mb-2 flex items-center">
+                        <Leaf className="w-4 h-4 mr-2" style={{ color: '#1FC77C' }} />
+                        Analisi Nutrizionale
+                      </h3>
+                      
+                      <div className="space-y-2">
+                        {product.nutritionalValues.map((nutrient, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-accent rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-lg">
+                                {getIconForNutrient(nutrient.icon)}
+                              </span>
+                              <div>
+                                <div className="font-medium text-foreground text-sm">
+                                  {nutrient.label}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {nutrient.value}%
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-1">
+                              <div 
+                                className={`w-2 h-2 rounded-full ${getStatusColor(nutrient.status)}`}
+                              />
+                              <span className="text-xs font-medium text-foreground">
+                                {getStatusText(nutrient.status)}
+                              </span>
+                            </div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* Da considerare */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                        <h4 className="font-semibold text-orange-800 text-sm">Da considerare</h4>
-                      </div>
-                      <div className="space-y-1">
-                        {product.concerns.map((point, i) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <span className="w-1 h-1 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
-                            <span className="text-orange-700 font-medium text-xs leading-relaxed">{point}</span>
+                    {/* Recommendation */}
+                    {product.recommendation && (
+                      <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                        <div className="flex items-start space-x-2">
+                          <Zap className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-medium text-primary mb-1 text-sm">
+                              Raccomandazione
+                            </h4>
+                            <p className="text-xs text-foreground">
+                              {product.recommendation}
+                            </p>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
+                    )}
 
-                {/* Recommendation - Hero Style */}
-                <div className="relative overflow-hidden rounded-xl">
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-50 via-green-50 to-emerald-50"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-green-100/15 to-transparent"></div>
-                  <div className="relative p-4 border border-green-200/40 transition-all duration-500">
-                    <div className="flex items-start space-x-3">
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow">
-                          <span className="text-white text-sm font-bold">✓</span>
-                        </div>
+                    {/* Success Message */}
+                    {product.evaluationStatus === 'approved' && (
+                      <div className="text-center">
+                        <div className="text-xl mb-1">🎉</div>
+                        <p className="text-sm font-medium text-primary">
+                          Ottima Scelta per il tuo Pet!
+                        </p>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="font-bold text-green-800 text-sm">Raccomandazione PetScan</h4>
-                          <Star className="w-3 h-3 text-green-600" />
-                        </div>
-                        <p className="text-green-700 text-sm leading-snug font-medium">{product.suitableFor}</p>
+                    )}
+
+                    {/* Warning Message for "Could be better" */}
+                    {product.evaluationStatus === 'could-be-better' && (
+                      <div className="text-center">
+                        <div className="text-xl mb-1">⚠️</div>
+                        <p className="text-sm font-medium text-secondary">
+                          Prodotto accettabile, ma esistono alternative migliori
+                        </p>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    )}
+
+                    {/* Alert Message for "Not approved" */}
+                    {product.evaluationStatus === 'not-approved' && (
+                      <div className="text-center">
+                        <div className="text-xl mb-1">❌</div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Ti consigliamo di scegliere un prodotto diverso
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })}
         </div>
 
-        {/* CTA finale - mantenuto uguale */}
-        <div className="mt-24">
-          <Card className="relative overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-emerald-50 via-white to-green-50">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/5 via-transparent to-green-400/5"></div>
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-emerald-100/20 to-transparent rounded-full blur-3xl"></div>
+        {/* CTA Button "Scannerizza" inspired by the image design */}
+        <div className="mt-16 flex justify-center">
+          <button
+            onClick={() => scrollToSection("scannerizza-form")}
+            className="group relative bg-white hover:bg-gray-50 text-gray-700 font-bold py-6 px-8 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-[1.05] hover:-translate-y-2 backdrop-blur-sm"
+            style={{
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.05)',
+              minWidth: '320px',
+              height: '80px'
+            }}
+          >
+            {/* Animated PetScan border - always active */}
+            <div className="absolute -inset-0.5 rounded-full opacity-100 animate-border-pulse">
+              <div className="w-full h-full rounded-full bg-gradient-to-r from-green-400 via-orange-400 to-green-400 animate-gradient-shift p-0.5">
+                <div className="w-full h-full bg-white rounded-full"></div>
+              </div>
+            </div>
             
-            <CardContent className="relative p-12 lg:p-16 text-center">
-              <div className="max-w-4xl mx-auto">
-                <div className="text-6xl mb-8">🔍</div>
+            {/* Enhanced glow effect */}
+            <div className="absolute -inset-2 bg-gradient-to-r from-green-400/30 via-orange-400/30 to-green-400/30 rounded-full blur-xl opacity-60 group-hover:opacity-100 animate-pulse transition-all duration-500 -z-10"></div>
+            
+            {/* Shimmer effect - always active */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12 animate-shimmer"></div>
+            
+            {/* Additional sparkle effects */}
+            <div className="absolute inset-0 rounded-full overflow-hidden">
+              <div className="absolute top-4 left-8 w-1 h-1 bg-green-400 rounded-full animate-ping opacity-60" style={{ animationDelay: '0s' }}></div>
+              <div className="absolute top-6 right-12 w-1 h-1 bg-orange-400 rounded-full animate-ping opacity-60" style={{ animationDelay: '1s' }}></div>
+              <div className="absolute bottom-6 left-12 w-0.5 h-0.5 bg-green-400 rounded-full animate-ping opacity-40" style={{ animationDelay: '2s' }}></div>
+              <div className="absolute bottom-4 right-8 w-0.5 h-0.5 bg-orange-400 rounded-full animate-ping opacity-40" style={{ animationDelay: '1.5s' }}></div>
+            </div>
+            
+            <div className="relative flex items-center justify-center space-x-4 h-full">
+              {/* Barcode Scanner Icon - recreating the icon from the image */}
+              <div className="relative">
+                <svg width="48" height="36" viewBox="0 0 48 36" className="text-gray-600 group-hover:text-gray-800 transition-colors duration-300">
+                  {/* Scanner frame */}
+                  <rect x="2" y="2" width="44" height="32" rx="4" ry="4" fill="none" stroke="currentColor" strokeWidth="2.5"/>
+                  
+                  {/* Corner brackets */}
+                  <path d="M8 8L8 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M8 8L14 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  
+                  <path d="M40 8L40 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M40 8L34 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  
+                  <path d="M8 28L8 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M8 28L14 28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  
+                  <path d="M40 28L40 22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M40 28L34 28" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  
+                  {/* Barcode lines */}
+                  <rect x="12" y="14" width="1.5" height="8" fill="currentColor"/>
+                  <rect x="15" y="14" width="1" height="8" fill="currentColor"/>
+                  <rect x="17.5" y="14" width="2" height="8" fill="currentColor"/>
+                  <rect x="21" y="14" width="1" height="8" fill="currentColor"/>
+                  <rect x="23.5" y="14" width="1.5" height="8" fill="currentColor"/>
+                  <rect x="26.5" y="14" width="1" height="8" fill="currentColor"/>
+                  <rect x="29" y="14" width="2" height="8" fill="currentColor"/>
+                  <rect x="32.5" y="14" width="1" height="8" fill="currentColor"/>
+                  <rect x="35" y="14" width="1.5" height="8" fill="currentColor"/>
+                  
+                  {/* Scanning line - animated */}
+                  <rect x="10" y="18" width="28" height="1" fill="#22c55e" className="opacity-0 group-hover:opacity-100 group-hover:animate-pulse">
+                    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0s"/>
+                  </rect>
+                </svg>
                 
-                <h3 className="text-3xl lg:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
-                  Non trovi il tuo prodotto?
+                {/* Active scanning indicator */}
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity duration-300"></div>
+              </div>
+              
+              {/* Text */}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-700 group-hover:text-gray-900 transition-colors duration-300">
+                  Scannerizza
+                </div>
+                <div className="text-sm font-medium text-gray-500 group-hover:text-gray-600 transition-colors duration-300 mt-1">
+                  Inizia la tua prima analisi
+                </div>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Sezione informativa aggiuntiva */}
+        <div className="mt-16">
+          <Card className="relative overflow-hidden border-0 shadow-xl bg-gradient-to-br from-gray-50 via-white to-green-50/30">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-400/3 via-transparent to-orange-400/3"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-green-100/10 to-transparent rounded-full blur-2xl"></div>
+            
+            <CardContent className="relative p-8 lg:p-12 text-center">
+              <div className="max-w-3xl mx-auto">
+                <div className="text-4xl mb-6">🔬</div>
+                
+                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
+                  Analisi scientifica <span className="text-green-600">gratuita</span>
                 </h3>
                 
-                <p className="text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl mx-auto">
-                  I nostri veterinari analizzeranno <span className="font-bold text-emerald-600">gratuitamente</span> qualsiasi cibo. 
-                  Report professionale in 24 ore!
+                <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                  I nostri algoritmi di AI combinati con ricerca peer-reviewed analizzano ogni ingrediente per garantire 
+                  <br className="hidden sm:block" />
+                  la migliore alimentazione per il tuo amico a quattro zampe.
                 </p>
                 
-                <button
-                  onClick={() => scrollToSection("analisi-form")}
-                  className="group relative bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-12 py-6 rounded-2xl font-bold text-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105"
-                >
-                  <span className="relative z-10 flex items-center gap-3">
-                    <span className="text-2xl">🩺</span>
-                    Richiedi analisi gratuita
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-                
-                <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-500">✨</span>
-                    <span className="font-medium">Analisi professionale</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
+                  <div className="flex flex-col items-center p-4 bg-white/60 rounded-xl border border-gray-100/50 hover:shadow-md transition-all duration-300">
+                    <div className="text-2xl mb-2">⚡</div>
+                    <div className="font-semibold text-gray-800 text-sm">Risultati istantanei</div>
+                    <div className="text-xs text-gray-600 mt-1">Analisi in tempo reale</div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-500">📊</span>
-                    <span className="font-medium">Report dettagliato</span>
+                  <div className="flex flex-col items-center p-4 bg-white/60 rounded-xl border border-gray-100/50 hover:shadow-md transition-all duration-300">
+                    <div className="text-2xl mb-2">🎯</div>
+                    <div className="font-semibold text-gray-800 text-sm">Precisione scientifica</div>
+                    <div className="text-xs text-gray-600 mt-1">Basato su studi certificati</div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-500">🆓</span>
-                    <span className="font-medium">Sempre gratuito</span>
+                  <div className="flex flex-col items-center p-4 bg-white/60 rounded-xl border border-gray-100/50 hover:shadow-md transition-all duration-300">
+                    <div className="text-2xl mb-2">🆓</div>
+                    <div className="font-semibold text-gray-800 text-sm">Sempre gratuito</div>
+                    <div className="text-xs text-gray-600 mt-1">Nessun costo nascosto</div>
                   </div>
                 </div>
               </div>
@@ -280,6 +468,89 @@ const ProductExamples = () => {
           </Card>
         </div>
       </div>
+
+      {/* Custom CSS for animations */}
+      <style>{`
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+
+        @keyframes gradient-conic {
+          0% {
+            background: conic-gradient(from 0deg, #22c55e, #fb923c, #22c55e);
+          }
+          100% {
+            background: conic-gradient(from 360deg, #22c55e, #fb923c, #22c55e);
+          }
+        }
+
+        .bg-gradient-conic {
+          background: conic-gradient(from 0deg, #22c55e, #fb923c, #22c55e);
+        }
+
+        @keyframes gradient-shift {
+          0% {
+            background: linear-gradient(45deg, #22c55e, #fb923c, #22c55e);
+          }
+          25% {
+            background: linear-gradient(45deg, #fb923c, #22c55e, #fb923c);
+          }
+          50% {
+            background: linear-gradient(45deg, #22c55e, #fb923c, #22c55e);
+          }
+          75% {
+            background: linear-gradient(45deg, #fb923c, #22c55e, #fb923c);
+          }
+          100% {
+            background: linear-gradient(45deg, #22c55e, #fb923c, #22c55e);
+          }
+        }
+
+        .animate-gradient-shift {
+          animation: gradient-shift 3s ease-in-out infinite;
+        }
+
+        @keyframes border-pulse {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.02);
+            opacity: 0.8;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        .animate-border-pulse {
+          animation: border-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%) skewX(-12deg);
+          }
+          100% {
+            transform: translateX(200%) skewX(-12deg);
+          }
+        }
+
+        .animate-shimmer {
+          animation: shimmer 3s ease-in-out infinite;
+        }
+      `}</style>
     </section>
   );
 };
