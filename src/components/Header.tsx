@@ -70,11 +70,46 @@ const Header = () => {
   };
 
   const navigateToAboutUs = () => {
+    // Navigate to the AboutUs page
     navigate('/chi-ce-dietro');
-    // Scroll to top after navigation
+    
+    // Aggressive scroll to top with multiple methods
+    const forceScrollToTop = () => {
+      // Method 1: Force immediate scroll
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      
+      // Method 2: Try to scroll the main element if it exists
+      const mainElement = document.querySelector('main');
+      if (mainElement) {
+        mainElement.scrollTop = 0;
+      }
+    };
+    
+    // Execute immediately and with multiple delays
+    forceScrollToTop();
+    
+    // Execute after navigation completes
+    setTimeout(forceScrollToTop, 50);
+    setTimeout(forceScrollToTop, 100);
+    setTimeout(forceScrollToTop, 200);
+    setTimeout(forceScrollToTop, 500);
+    
+    // Final aggressive attempt
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 1000);
+    
+    // Nuclear option: force page reload if scroll doesn't work
+    setTimeout(() => {
+      if (window.scrollY > 0) {
+        console.log('Scroll failed, forcing page reload');
+        window.location.href = '/chi-ce-dietro';
+      }
+    }, 1500);
   };
 
   const navigateToHome = () => {
@@ -168,17 +203,17 @@ const Header = () => {
       {/* Mobile Bottom Navigation Bar - Dynamic with UI effects */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] px-6 animate-in slide-in-from-bottom-4 duration-500" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
         <nav className="bg-white/95 backdrop-blur-2xl rounded-[20px] shadow-lg border border-gray-100/80 mx-auto max-w-xs hover:shadow-xl transition-all duration-500 hover:scale-[1.02]">
-          <div className="flex items-center justify-between px-4 py-2">
+          <div className="flex items-center justify-between px-4 py-3">
             {/* Guida */}
             <button
               onClick={() => scrollToSection('come-funziona')}
               className="group flex flex-col items-center justify-center transition-all duration-300 active:scale-90 touch-manipulation hover:scale-110"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-1 shadow-sm border border-gray-100 group-hover:bg-green-50 group-hover:border-green-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
-                <Settings className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors duration-300" strokeWidth="1.8" />
+              <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center mb-1.5 shadow-sm border border-gray-100 group-hover:bg-green-50 group-hover:border-green-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
+                <Settings className="w-5 h-5 text-gray-500 group-hover:text-green-600 transition-colors duration-300" strokeWidth="1.8" />
               </div>
-              <span className="text-[9px] font-medium text-gray-500 group-hover:text-green-600 transition-colors duration-300">Guida</span>
+              <span className="text-[10px] font-medium text-gray-500 group-hover:text-green-600 transition-colors duration-300">Guida</span>
             </button>
 
             {/* Esempi */}
@@ -187,10 +222,10 @@ const Header = () => {
               className="group flex flex-col items-center justify-center transition-all duration-300 active:scale-90 touch-manipulation hover:scale-110"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-1 shadow-sm border border-gray-100 group-hover:bg-orange-50 group-hover:border-orange-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
-                <FileText className="w-4 h-4 text-gray-500 group-hover:text-orange-600 transition-colors duration-300" strokeWidth="1.8" />
+              <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center mb-1.5 shadow-sm border border-gray-100 group-hover:bg-orange-50 group-hover:border-orange-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
+                <FileText className="w-5 h-5 text-gray-500 group-hover:text-orange-600 transition-colors duration-300" strokeWidth="1.8" />
               </div>
-              <span className="text-[9px] font-medium text-gray-500 group-hover:text-orange-600 transition-colors duration-300">Esempi</span>
+              <span className="text-[10px] font-medium text-gray-500 group-hover:text-orange-600 transition-colors duration-300">Esempi</span>
             </button>
 
             {/* Scannerizza - Dynamic central button with enhanced effects */}
@@ -259,11 +294,11 @@ const Header = () => {
                 WebkitTapHighlightColor: 'transparent',
                 userSelect: 'none',
                 touchAction: 'manipulation',
-                minHeight: '60px',
-                minWidth: '60px'
+                minHeight: '70px',
+                minWidth: '70px'
               }}
             >
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-orange-400 flex items-center justify-center mb-1 shadow-2xl relative border border-white transition-all duration-500 group-active:scale-90">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 via-green-500 to-orange-400 flex items-center justify-center mb-1.5 shadow-2xl relative border border-white transition-all duration-500 group-active:scale-90">
                 {/* Enhanced animated glow effect - always visible */}
                 <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-br from-green-400 to-orange-400 blur-md opacity-60 transition-all duration-500 -z-10 animate-pulse"></div>
                 
@@ -273,7 +308,7 @@ const Header = () => {
                 </div>
                 
                 {/* Premium scanner icon with micro-animation - always visible */}
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white scale-110 transition-transform duration-300">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white scale-110 transition-transform duration-300">
                   <path d="M3 7V5a2 2 0 0 1 2-2h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   <path d="M17 3h2a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   <path d="M21 17v2a2 2 0 0 1-2 2h-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -282,7 +317,7 @@ const Header = () => {
                   <circle cx="12" cy="12" r="1" fill="currentColor" className="animate-ping"/>
                 </svg>
               </div>
-              <span className="text-[9px] font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-300">Scan</span>
+              <span className="text-[10px] font-bold text-gray-800 group-hover:text-gray-900 transition-colors duration-300">Scan</span>
             </button>
 
             {/* Chi Siamo */}
@@ -291,10 +326,10 @@ const Header = () => {
               className="group flex flex-col items-center justify-center transition-all duration-300 active:scale-90 touch-manipulation hover:scale-110"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-1 shadow-sm border border-gray-100 group-hover:bg-red-50 group-hover:border-red-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
-                <Heart className="w-4 h-4 text-gray-500 group-hover:text-red-500 transition-colors duration-300 group-hover:animate-pulse" strokeWidth="1.8" />
+              <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center mb-1.5 shadow-sm border border-gray-100 group-hover:bg-red-50 group-hover:border-red-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
+                <Heart className="w-5 h-5 text-gray-500 group-hover:text-red-500 transition-colors duration-300 group-hover:animate-pulse" strokeWidth="1.8" />
               </div>
-              <span className="text-[9px] font-medium text-gray-500 group-hover:text-red-500 transition-colors duration-300">Chi Siamo</span>
+              <span className="text-[10px] font-medium text-gray-500 group-hover:text-red-500 transition-colors duration-300">Chi Siamo</span>
             </button>
 
             {/* FAQ */}
@@ -303,10 +338,10 @@ const Header = () => {
               className="group flex flex-col items-center justify-center transition-all duration-300 active:scale-90 touch-manipulation hover:scale-110"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <div className="w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center mb-1 shadow-sm border border-gray-100 group-hover:bg-teal-50 group-hover:border-teal-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
-                <HelpCircle className="w-4 h-4 text-gray-500 group-hover:text-teal-600 transition-colors duration-300" strokeWidth="1.8" />
+              <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center mb-1.5 shadow-sm border border-gray-100 group-hover:bg-teal-50 group-hover:border-teal-200 group-hover:shadow-md transition-all duration-300 group-active:scale-90">
+                <HelpCircle className="w-5 h-5 text-gray-500 group-hover:text-teal-600 transition-colors duration-300" strokeWidth="1.8" />
               </div>
-              <span className="text-[9px] font-medium text-gray-500 group-hover:text-teal-600 transition-colors duration-300">FAQ</span>
+              <span className="text-[10px] font-medium text-gray-500 group-hover:text-teal-600 transition-colors duration-300">FAQ</span>
             </button>
           </div>
         </nav>

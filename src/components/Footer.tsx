@@ -148,7 +148,7 @@ const Footer = () => {
               <ul className="space-y-3">
                 <li>
                   <Link 
-                    to="/about-us" 
+                    to="/chi-ce-dietro" 
                     className="text-gray-300 hover:text-purple-400 transition-colors duration-200 flex items-center group"
                   >
                     <span className="w-2 h-2 bg-purple-400 rounded-full mr-3 group-hover:scale-150 transition-transform"></span>

@@ -1,12 +1,63 @@
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Heart, Mail } from 'lucide-react';
+import { Heart, Mail, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 const AboutUs = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // Use useLayoutEffect for immediate execution before paint
+  useLayoutEffect(() => {
+    // Force scroll to top immediately
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+  
+  // Ensure page scrolls to top when component mounts
+  useEffect(() => {
+    const forceScrollToTop = () => {
+      // Multiple scroll methods
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      
+      // Try to scroll any scrollable containers
+      const scrollableElements = document.querySelectorAll('[data-scrollable], main, .scrollable');
+      scrollableElements.forEach(element => {
+        if (element instanceof HTMLElement) {
+          element.scrollTop = 0;
+        }
+      });
+    };
+    
+    // Execute immediately
+    forceScrollToTop();
+    
+    // Execute multiple times with different delays
+    setTimeout(forceScrollToTop, 10);
+    setTimeout(forceScrollToTop, 50);
+    setTimeout(forceScrollToTop, 100);
+    setTimeout(forceScrollToTop, 200);
+    setTimeout(forceScrollToTop, 500);
+    
+    // Final attempts
+    setTimeout(forceScrollToTop, 1000);
+    setTimeout(forceScrollToTop, 2000);
+    
+    // Show scroll to top button if needed
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 100);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   const handleContactClick = () => {
     window.location.href = 'mailto:alessandro@mypetscan.it';
@@ -21,6 +72,10 @@ const AboutUs = () => {
         element.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -130,6 +185,17 @@ const AboutUs = () => {
       </main>
 
       <Footer />
+      
+      {/* Floating Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={handleScrollToTop}
+          className="fixed bottom-24 right-6 z-50 bg-green-500 hover:bg-green-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 md:hidden"
+          aria-label="Torna in cima"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
+      )}
     </div>
   );
 };
