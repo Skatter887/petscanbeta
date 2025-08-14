@@ -132,8 +132,12 @@ const BarcodeScanner = ({
   }, []);
 
   useEffect(() => {
+    console.log('🎬 BarcodeScanner mounted, starting scanner...');
     startScanning();
-    return () => stopScanning();
+    return () => {
+      console.log('🛑 BarcodeScanner unmounting, stopping scanner...');
+      stopScanning();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -142,8 +146,10 @@ const BarcodeScanner = ({
   }, [onScannerStateChange]);
 
   const startScanning = async () => {
+    console.log('🚀 startScanning called, isScanning:', isScanning);
     if (isScanning) return;
 
+    console.log('✅ Setting up scanner...');
     setIsScanning(true);
     setError(null);
     setShowPermissionError(false);
@@ -441,6 +447,8 @@ const BarcodeScanner = ({
     onClose?.();
   };
 
+  console.log('🎥 BarcodeScanner rendering, isScanning:', isScanning, 'error:', error);
+  
   return (
     <div
       className={`${isMobile ? 'scanner-fullscreen' : 'w-full max-w-full box-border'}`}

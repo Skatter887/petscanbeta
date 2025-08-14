@@ -942,6 +942,11 @@ const HeroSection = () => {
     handleCloseAddProductModal(); // Chiama la funzione del hook
   };
 
+  // Log per debug dello scanner
+  useEffect(() => {
+    console.log('showScanner state changed to:', showScanner);
+  }, [showScanner]);
+
   // Scroll automatico quando l'analisi è completata
   useEffect(() => {
     if (analysisResult) {
@@ -1105,11 +1110,10 @@ const HeroSection = () => {
                    data-scan-button="true"
                    className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-12 h-12 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-2 focus:outline-none focus:ring-2 focus:ring-green-400"
                   onClick={() => {
-                    console.log('Scan button clicked, analysisResult:', analysisResult, 'search:', search);
-                    
-                    // SEMPRE ricarica la pagina quando si clicca su scan dopo un'analisi
-                    // Questo garantisce che tutto sia pulito e pronto per una nuova ricerca
-                    window.location.reload();
+                    console.log('Scan button clicked, opening scanner');
+                    console.log('Current showScanner state:', showScanner);
+                    setShowScanner(true);
+                    console.log('showScanner set to true');
                   }}
                   aria-label="Scansiona barcode"
                   tabIndex={0}
@@ -1325,11 +1329,10 @@ const HeroSection = () => {
             data-scan-button="true"
             className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-3 focus:outline-none focus:ring-2 focus:ring-green-400"
             onClick={() => {
-              console.log('Desktop scan button clicked, analysisResult:', analysisResult, 'search:', search);
-              
-              // SEMPRE ricarica la pagina quando si clicca su scan dopo un'analisi
-              // Questo garantisce che tutto sia pulito e pronto per una nuova ricerca
-              window.location.reload();
+              console.log('Desktop scan button clicked, opening scanner');
+              console.log('Current showScanner state:', showScanner);
+              setShowScanner(true);
+              console.log('showScanner set to true');
             }}
             aria-label="Scansiona barcode"
             tabIndex={0}

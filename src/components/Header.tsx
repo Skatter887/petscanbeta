@@ -211,9 +211,7 @@ const Header = () => {
                       // Dopo lo scroll, apri lo scanner
                       setTimeout(() => {
                         // Cerca il pulsante scan nella homepage e cliccalo
-                        const scanButton = document.querySelector('[data-scan-button]') || 
-                                         document.querySelector('button[onClick*="setShowScanner"]') ||
-                                         document.querySelector('button[aria-label="Scansiona barcode"]');
+                        const scanButton = document.querySelector('[data-scan-button]');
                         if (scanButton) {
                           console.log('Found scan button, clicking it');
                           (scanButton as HTMLElement).click();
@@ -236,9 +234,7 @@ const Header = () => {
                     // Dopo lo scroll, apri lo scanner
                     setTimeout(() => {
                       // Cerca il pulsante scan nella homepage e cliccalo
-                      const scanButton = document.querySelector('[data-scan-button]') || 
-                                       document.querySelector('button[onClick*="setShowScanner"]') ||
-                                       document.querySelector('button[aria-label="Scansiona barcode"]');
+                      const scanButton = document.querySelector('[data-scan-button]');
                       if (scanButton) {
                         console.log('Found scan button, clicking it');
                         (scanButton as HTMLElement).click();
