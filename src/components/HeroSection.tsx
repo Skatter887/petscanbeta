@@ -497,6 +497,99 @@ const pawAnimations = `
   .autocomplete-suggestion:hover {
     transform: translateX(2px);
   }
+
+  /* Animazioni per la barra di ricerca desktop */
+  .search-border-animation::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(34, 197, 94, 0.1) 10%,
+      rgba(34, 197, 94, 0.3) 20%,
+      rgba(34, 197, 94, 0.6) 30%,
+      rgba(34, 197, 94, 0.8) 40%,
+      rgba(34, 197, 94, 1) 50%,
+      rgba(251, 191, 36, 1) 60%,
+      rgba(251, 191, 36, 0.8) 70%,
+      rgba(251, 191, 36, 0.6) 80%,
+      rgba(251, 191, 36, 0.3) 90%,
+      rgba(251, 191, 36, 0.1) 100%,
+      transparent 110%
+    );
+    background-size: 200% 100%;
+    animation: search-border-shine 12s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(0.3px);
+  }
+
+  .search-border-animation::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(34, 197, 94, 0.05) 0%,
+      rgba(34, 197, 94, 0.1) 25%,
+      rgba(251, 191, 36, 0.1) 50%,
+      rgba(251, 191, 36, 0.05) 75%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: -2;
+  }
+
+  /* Animazioni per il pop-up scanner */
+  @keyframes zoom-in-95 {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-in.zoom-in-95 {
+    animation: zoom-in-95 0.3s ease-out;
+  }
+
+  @keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+      transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+      transform: translate3d(0, -8px, 0);
+    }
+    70% {
+      transform: translate3d(0, -4px, 0);
+    }
+    90% {
+      transform: translate3d(0, -2px, 0);
+    }
+  }
+
+  .animate-bounce {
+    animation: bounce 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 `;
 
 const CATEGORIES = [
@@ -893,14 +986,28 @@ const HeroSection = () => {
         });
       }
     } else {
-      // Su desktop, trova la barra di ricerca e posizionala in alto
-      const searchForm = document.getElementById('scannerizza-form-desktop');
-      if (searchForm) {
-        const elementRect = searchForm.getBoundingClientRect();
-        const absoluteElementTop = elementRect.top + window.pageYOffset;
-        // Posiziona la barra di ricerca a circa 20px dall'alto dello schermo
-        const targetPosition = absoluteElementTop - 20;
-        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+      // Su desktop, la barra di ricerca è ora integrata in HeroContent
+      // Trova la barra di ricerca desktop e scrolla ad essa, poi metti il focus
+      const desktopSearchForm = document.getElementById('scannerizza-form-desktop-hero');
+      if (desktopSearchForm) {
+        desktopSearchForm.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        
+        // Metti il focus sull'input dopo lo scroll
+        setTimeout(() => {
+          const desktopInput = desktopSearchForm.querySelector('input');
+          if (desktopInput) {
+            desktopInput.focus();
+          }
+        }, 500);
+      } else {
+        // Fallback: scroll al centro della pagina
+        window.scrollTo({ 
+          top: window.innerHeight / 2, 
+          behavior: 'smooth' 
+        });
       }
     }
   };
@@ -1083,6 +1190,26 @@ const HeroSection = () => {
                 onAnalyzeClick={handleAnalyzeClick}
                 onExamplesClick={() => {}}
                 isAnalysisActive={analysisResult !== null}
+                search={search}
+                onSearchChange={(value) => {
+                  setSearch(value);
+                  searchSuggestions(value);
+                }}
+                onSearchSubmit={handleSubmit}
+                analysisLoading={analysisLoading}
+                showSuggestions={showSuggestions}
+                suggestions={suggestions}
+                selectedIndex={selectedIndex}
+                onSuggestionSelect={(suggestion) => {
+                  const selected = selectSuggestion(suggestion);
+                  setSearch(selected.value);
+                  // Scroll al centro della pagina per il loading
+                  window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
+                  handleProductAnalysis(selected.ean.toString());
+                }}
+                onSuggestionKeyDown={handleAutocompleteKeyDown}
+                autocompleteLoading={autocompleteLoading}
+                onScanClick={() => setShowScanner(true)}
               />
             </div>
             
@@ -1299,197 +1426,9 @@ const HeroSection = () => {
         </section>
       )}
 
-      {/* Barra di ricerca desktop - visibile solo su desktop */}
-      <div id="scannerizza-form-desktop" className="relative hidden md:block w-full max-w-lg mx-auto mt-8 mb-8">
-        {/* Animazione bordo miccia */}
-        <div 
-          className={`absolute inset-0 ${showScanner ? 'rounded-3xl' : 'rounded-full'} search-border-animation`}
-          style={{
-            zIndex: 1,
-          }}
-        />
-        
-        <form
-          onSubmit={handleSubmit}
-          className={`relative flex w-full flex-row items-center gap-0 shadow-lg border border-white/40 overflow-visible ${showScanner ? 'bg-white/80 backdrop-blur-xl rounded-3xl py-6 px-4' : 'bg-white/90 rounded-full py-5 px-6 backdrop-blur-md min-h-[64px]'}
-            !transition-all !duration-200`}
-          style={{
-            WebkitAppearance: 'none',
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation',
-            boxSizing: 'border-box',
-            willChange: 'transform',
-            zIndex: 2,
-          }}
-        >
-        {/* Scanner icon sinistra */}
-        {!showScanner && (
-          <button
-            type="button"
-            data-scan-button="true"
-            className="flex items-center justify-center bg-gradient-to-br from-green-400 to-orange-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 mr-3 focus:outline-none focus:ring-2 focus:ring-green-400"
-            onClick={() => {
-              console.log('Desktop scan button clicked, opening scanner');
-              console.log('Current showScanner state:', showScanner);
-              setShowScanner(true);
-              console.log('showScanner set to true');
-            }}
-            aria-label="Scansiona barcode"
-            tabIndex={0}
-            style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-          >
-            <ScanLine className="w-8 h-8" style={{ display: 'block' }} />
-          </button>
-        )}
-        {/* Inline BarcodeScanner o input normale */}
-        <div className="flex-1 flex items-center justify-center min-w-0">
-          {showScanner ? (
-            <div className="w-full flex items-center justify-center">
-              <BarcodeScanner
-                onScan={handleScan}
-                onManualEntry={handleScan}
-                isLoading={analysisLoading}
-                onScannerStateChange={setIsScannerActive}
-                onClose={() => setShowScanner(false)}
-              />
-              <button
-                type="button"
-                className="ml-2 text-gray-400 hover:text-red-500 text-2xl font-bold focus:outline-none"
-                onClick={() => setShowScanner(false)}
-                aria-label="Chiudi scanner"
-                tabIndex={0}
-                style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-              >
-                ×
-              </button>
-            </div>
-          ) : (
-            <input
-              ref={inputRef}
-              type="text"
-              inputMode="text"
-              className="flex-1 bg-transparent outline-none px-4 py-2 text-2xl rounded-full placeholder-gray-400 min-w-0"
-              placeholder="Inserisci barcode o nome prodotto"
-              value={search}
-                                onChange={e => {
-                    const value = e.target.value;
-                    setSearch(value);
-                    searchSuggestions(value);
-                  }}
-              onKeyDown={e => {
-                const selectedSuggestion = handleAutocompleteKeyDown(e);
-                if (selectedSuggestion) {
-                  setSearch(selectedSuggestion.value);
-                  // Scroll al centro della pagina per il loading
-                  window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
-                  handleProductAnalysis(selectedSuggestion.ean.toString());
-                }
-              }}
-              disabled={analysisLoading}
-              autoComplete="off"
-              style={{
-                WebkitAppearance: 'none',
-                fontSize: '1.1rem',
-                lineHeight: 1.2,
-                border: 'none',
-                outline: 'none',
-                boxShadow: 'none',
-                background: 'transparent',
-                width: '100%',
-                minWidth: 0,
-                padding: '0.7em 0.5em',
-                borderRadius: '9999px',
-                MozOsxFontSmoothing: 'grayscale',
-                WebkitFontSmoothing: 'antialiased',
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation',
-              }}
-              onFocus={e => {
-                // Previene zoom su iOS
-                e.target.style.fontSize = '16px';
-              }}
-              onBlur={e => {
-                e.target.style.fontSize = '1.1rem';
-                // Non chiudiamo i suggerimenti qui - lasciamo che il click outside handler se ne occupi
-              }}
-            />
-          )}
-        </div>
-        {/* Search icon destra */}
-        {!showScanner && (
-          <button
-            type="submit"
-            className="flex items-center justify-center bg-gradient-to-br from-orange-400 to-green-400 text-white rounded-full w-14 h-14 shadow-lg hover:scale-110 hover:shadow-xl transition-all duration-200 ml-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
-            disabled={analysisLoading || !search.trim()}
-            aria-label="Cerca"
-            tabIndex={0}
-            style={{ fontSize: 28, WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-          >
-            <Search className="w-8 h-8" style={{ display: 'block' }} />
-          </button>
-        )}
-      </form>
-      
-      {/* Autocomplete suggestions - FUORI dal form per evitare conflitti */}
+      {/* Barra di ricerca desktop - ora integrata in HeroContent */}
 
-      {showSuggestions && suggestions.length > 0 && !showScanner && (
-        <div 
-          className="absolute left-0 top-full w-full max-w-lg bg-white border border-gray-200 rounded-b-2xl shadow-lg z-50 mt-1 overflow-auto max-h-64 autocomplete-dropdown"
-          style={{ marginTop: '1px' }}
-        >
-          {suggestions.map((suggestion, idx) => (
-            <div
-              key={`desktop-${suggestion.type}-${suggestion.ean}-${idx}`}
-              data-autocomplete-suggestion
-              className={`w-full text-left px-4 py-3 text-gray-800 text-sm border-b border-gray-100 last:border-b-0 flex flex-col cursor-pointer autocomplete-suggestion ${
-                selectedIndex === idx ? 'bg-green-50 border-green-200' : 'hover:bg-gray-100'
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const selected = selectSuggestion(suggestion);
-                setSearch(selected.value);
-                
-                // Scroll al centro della pagina per il loading
-                window.scrollTo({ top: window.innerHeight / 2, behavior: 'smooth' });
-                
-                handleProductAnalysis(selected.ean.toString());
-              }}
-              style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-            >
-              <div className="font-medium text-gray-900">
-                {suggestion.label}
-              </div>
-              <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
-                <span>{suggestion.brand}</span>
-                <span className="text-gray-400">EAN: {suggestion.ean}</span>
-              </div>
-              {suggestion.type === 'ean' && (
-                <div className="text-xs text-blue-600 mt-1">
-                  🔗 Match barcode
-                </div>
-              )}
-              {suggestion.type === 'brand' && (
-                <div className="text-xs text-green-600 mt-1">
-                  🏷️ Match brand
-                </div>
-              )}
-            </div>
-          ))}
-          {autocompleteLoading && (
-            <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              Caricamento suggerimenti...
-            </div>
-          )}
-        </div>
-      )}
-      </div>
-
-      {/* Statistiche - solo desktop, posizionate sotto la barra di ricerca */}
-      <div className="w-full hidden md:flex justify-center mt-5 mb-4">
-        <HeroStats />
-      </div>
+      {/* Statistiche desktop - ora integrate in HeroContent */}
 
       {/* Subtle Loading Bar - appears under search when analyzing */}
       {analysisLoading && (

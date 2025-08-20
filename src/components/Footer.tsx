@@ -87,15 +87,7 @@ const Footer = () => {
                     FAQ
                   </button>
                 </li>
-                <li>
-                  <Link 
-                    to="/scopri-petscan-pro" 
-                    className="text-gray-300 hover:text-teal-400 transition-colors duration-200 flex items-center group"
-                  >
-                    <span className="w-2 h-2 bg-teal-400 rounded-full mr-3 group-hover:scale-150 transition-transform"></span>
-                    PetScan Pro
-                  </Link>
-                </li>
+
               </ul>
             </div>
 

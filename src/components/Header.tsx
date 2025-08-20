@@ -22,12 +22,86 @@ const Header = () => {
       navigate('/');
       // Wait for navigation to complete, then scroll
       setTimeout(() => {
+        if (sectionId === 'analisi-form' && !isMobile) {
+          // Su desktop, scrolla alla barra di ricerca integrata in HeroContent
+          console.log('Scrolling to HeroContent search form on desktop');
+          const heroSearchForm = document.getElementById('scannerizza-form-desktop-hero');
+          if (heroSearchForm) {
+            heroSearchForm.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center' 
+            });
+            
+            // Metti il focus sull'input dopo lo scroll
+            setTimeout(() => {
+              const desktopInput = heroSearchForm.querySelector('input');
+              if (desktopInput) {
+                desktopInput.focus();
+              }
+            }, 500);
+          } else {
+            // Fallback: scroll al centro della pagina
+            window.scrollTo({ 
+              top: window.innerHeight / 2, 
+              behavior: 'smooth' 
+            });
+          }
+        } else {
+          const element = document.getElementById(sectionId);
+          console.log('Element found after navigation:', element);
+          if (element) {
+            if (sectionId === 'scannerizza-form') {
+              if (isMobile) {
+                console.log('Scrolling to scannerizza-form on mobile');
+                // Center the search bar on the screen
+                element.scrollIntoView({ 
+                  behavior: 'smooth', 
+                  block: 'center',
+                  inline: 'center'
+                });
+              } else {
+                console.log('scannerizza-form is hidden on desktop');
+              }
+            } else {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          } else {
+            console.log('Element not found:', sectionId);
+          }
+        }
+      }, 100);
+    } else {
+      if (sectionId === 'analisi-form' && !isMobile) {
+        // Su desktop, scrolla alla barra di ricerca integrata in HeroContent
+        console.log('Scrolling to HeroContent search form on desktop');
+        const heroSearchForm = document.getElementById('scannerizza-form-desktop-hero');
+        if (heroSearchForm) {
+          heroSearchForm.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          
+          // Metti il focus sull'input dopo lo scroll
+          setTimeout(() => {
+            const desktopInput = heroSearchForm.querySelector('input');
+            if (desktopInput) {
+              desktopInput.focus();
+            }
+          }, 500);
+        } else {
+          // Fallback: scroll al centro della pagina
+          window.scrollTo({ 
+            top: window.innerHeight / 2, 
+            behavior: 'smooth' 
+          });
+        }
+      } else {
         const element = document.getElementById(sectionId);
-        console.log('Element found after navigation:', element);
+        console.log('Element found on same page:', element);
         if (element) {
           if (sectionId === 'scannerizza-form') {
             if (isMobile) {
-              console.log('Scrolling to scannerizza-form on mobile');
+              console.log('Scrolling to scannerizza-form on same page, mobile');
               // Center the search bar on the screen
               element.scrollIntoView({ 
                 behavior: 'smooth', 
@@ -41,30 +115,8 @@ const Header = () => {
             element.scrollIntoView({ behavior: 'smooth' });
           }
         } else {
-          console.log('Element not found:', sectionId);
+          console.log('Element not found on same page:', sectionId);
         }
-      }, 100);
-    } else {
-      const element = document.getElementById(sectionId);
-      console.log('Element found on same page:', element);
-      if (element) {
-        if (sectionId === 'scannerizza-form') {
-          if (isMobile) {
-            console.log('Scrolling to scannerizza-form on same page, mobile');
-            // Center the search bar on the screen
-            element.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center',
-              inline: 'center'
-            });
-          } else {
-            console.log('scannerizza-form is hidden on desktop');
-          }
-        } else {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else {
-        console.log('Element not found on same page:', sectionId);
       }
     }
   };

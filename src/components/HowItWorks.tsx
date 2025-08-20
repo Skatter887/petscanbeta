@@ -154,9 +154,38 @@ const HowItWorks = () => {
   }, [fadeInCards, visibleCards, animatedCards]);
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    // Check if we're on desktop
+    const isDesktop = window.innerWidth >= 768;
+    
+    if (sectionId === "scannerizza-form" && isDesktop) {
+      // Su desktop, scrolla alla barra di ricerca integrata in HeroContent
+      const heroSearchForm = document.getElementById('scannerizza-form-desktop-hero');
+      if (heroSearchForm) {
+        heroSearchForm.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        
+        // Metti il focus sull'input dopo lo scroll
+        setTimeout(() => {
+          const desktopInput = heroSearchForm.querySelector('input');
+          if (desktopInput) {
+            desktopInput.focus();
+          }
+        }, 500);
+      } else {
+        // Fallback: scroll al centro della pagina
+        window.scrollTo({ 
+          top: window.innerHeight / 2, 
+          behavior: 'smooth' 
+        });
+      }
+    } else {
+      // Su mobile o per altre sezioni, mantieni il comportamento originale
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -430,7 +459,7 @@ const HowItWorks = () => {
                 <div className="absolute bottom-4 right-8 w-0.5 h-0.5 bg-orange-400 rounded-full animate-ping opacity-40" style={{ animationDelay: '1.5s' }}></div>
               </div>
               
-              <div className="relative flex flex-col md:flex-row items-center justify-center space-y-2 md:space-y-0 md:space-x-4 h-full">
+              <div className="relative flex flex-col md:flex-row items-center justify-center md:justify-center space-y-2 md:space-y-0 md:space-x-4 h-full">
                 {/* Scanner icon - Responsive */}
                 <div className="relative flex-shrink-0">
                   <svg width="32" height="24" viewBox="0 0 48 36" className="text-gray-600 group-hover:text-gray-800 transition-colors duration-300 md:w-10 md:h-8">
@@ -460,7 +489,7 @@ const HowItWorks = () => {
                 </div>
                 
                 {/* Text - Responsive */}
-                <div className="text-center md:text-left flex-1">
+                <div className="text-center md:text-center md:flex-none flex-1">
                   <div className="text-lg md:text-xl lg:text-2xl font-bold text-gray-700 group-hover:text-gray-900 transition-colors duration-300 leading-tight">
                     Inizia l'analisi gratuita
                   </div>
