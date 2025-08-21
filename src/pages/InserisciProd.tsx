@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Search, AlertCircle, Sparkles } from 'lucide-react';
 import ProductNotFoundModal from '@/components/ProductNotFoundModal';
 import AddProductModal from '@/components/AddProductModal';
+import SEOHead from '@/components/SEOHead';
 
 interface ProductAnalysisResult {
   productName: string;
@@ -30,6 +31,22 @@ interface ProductAnalysisResult {
 }
 
 const InserisciProd = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Inserisci Prodotto - PetScan",
+    "description": "Inserisci e analizza nuovi prodotti alimentari per cani e gatti con PetScan. Contribuisci alla crescita del database e ottieni analisi immediate.",
+    "mainEntity": {
+      "@type": "Service",
+      "name": "Inserimento Prodotti PetScan",
+      "description": "Servizio per inserire e analizzare nuovi prodotti alimentari per animali domestici",
+      "provider": {
+        "@type": "Organization",
+        "name": "PetScan"
+      }
+    }
+  };
+
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ProductAnalysisResult | null>(null);
   const [searchResults, setSearchResults] = useState<ProductData[]>([]);
@@ -167,6 +184,11 @@ const InserisciProd = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Inserisci Prodotto - PetScan"
+        description="Inserisci e analizza nuovi prodotti alimentari per cani e gatti con PetScan. Contribuisci alla crescita del database e ottieni analisi immediate."
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* Modern Hero Section with Gradient Background - Mobile Optimized */}

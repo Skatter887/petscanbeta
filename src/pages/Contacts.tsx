@@ -6,13 +6,51 @@ import { ArrowLeft, Mail, MessageCircle, Clock, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import ContactModal from '@/components/ContactModal';
+import SEOHead from '@/components/SEOHead';
 
 const Contacts = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contatti PetScan",
+    "description": "Contatta PetScan per supporto e informazioni sul servizio di analisi dell'alimentazione per cani e gatti",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "PetScan",
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+39-02-1234567",
+          "contactType": "customer service",
+          "email": "info@petscan.it",
+          "availableLanguage": "Italian"
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "technical support",
+          "email": "support@petscan.it"
+        }
+      ],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Via Roma 123",
+        "addressLocality": "Milano",
+        "postalCode": "20121",
+        "addressCountry": "IT"
+      }
+    }
+  };
+
   const navigate = useNavigate();
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title="Contatti - PetScan"
+        description="Contatta PetScan per supporto e informazioni sul servizio di analisi dell'alimentazione per cani e gatti"
+        structuredData={structuredData}
+      />
       <Header />
       
       <section className="py-20 px-4">

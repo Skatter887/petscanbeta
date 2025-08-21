@@ -5,8 +5,27 @@ import { Heart, Mail, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useLayoutEffect, useState } from 'react';
+import SEOHead from '@/components/SEOHead';
 
 const AboutUs = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PetScan",
+    "description": "Servizio di analisi dell'alimentazione per cani e gatti con intelligenza artificiale",
+    "url": "https://mypetscan.it",
+    "founder": {
+      "@type": "Person",
+      "name": "Alessandro Rizzola",
+      "email": "alessandro@mypetscan.it"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "alessandro@mypetscan.it",
+      "contactType": "customer service"
+    }
+  };
+
   const navigate = useNavigate();
   const location = useLocation();
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -80,6 +99,12 @@ const AboutUs = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50">
+      <SEOHead
+        title="Chi siamo - PetScan"
+        description="Scopri chi siamo dietro PetScan, il servizio di analisi dell'alimentazione per cani e gatti con intelligenza artificiale."
+        keywords="chi siamo, petscan, analisi alimentare, intelligenza artificiale, cani, gatti"
+        structuredData={structuredData}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-16">

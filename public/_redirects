@@ -1,0 +1,17 @@
+# Redirect per SEO e URL puliti
+/home / 301
+/index / 301
+/cane /analisi-cane 301
+/gatto /analisi-gatto 301
+/about /chi-ce-dietro 301
+/chi-siamo /chi-ce-dietro 301
+/contatti /contacts 301
+/contact /contacts 301
+/pro-plan /pro 301
+/premium /pro 301
+
+# Sitemap
+/sitemap.xml /sitemap.xml 200
+
+# Redirect per errori 404 - SPA fallback
+/* /index.html 200

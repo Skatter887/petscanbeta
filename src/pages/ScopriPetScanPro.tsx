@@ -6,8 +6,25 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ScrollToTop from '@/components/ScrollToTop';
 import { useNavigate } from 'react-router-dom';
+import SEOHead from '@/components/SEOHead';
 
 const ScopriPetScanPro = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Scopri PetScan - Come Yuka per animali",
+    "description": "Scopri come PetScan utilizza l'intelligenza artificiale avanzata e studi scientifici peer-reviewed per analizzare l'alimentazione di cani e gatti, come Yuka ma per i nostri amici a 4 zampe.",
+    "mainEntity": {
+      "@type": "Service",
+      "name": "PetScan - Analisi Alimentare con AI",
+      "description": "Servizio di analisi dell'alimentazione per cani e gatti con intelligenza artificiale avanzata e studi scientifici",
+      "provider": {
+        "@type": "Organization",
+        "name": "PetScan"
+      }
+    }
+  };
+
   const navigate = useNavigate();
   const scrollToAnalysisForm = () => {
     navigate('/');
@@ -39,6 +56,11 @@ const ScopriPetScanPro = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50">
+      <SEOHead
+        title="Scopri PetScan - Come Yuka per animali"
+        description="Scopri come PetScan utilizza l'intelligenza artificiale avanzata e studi scientifici peer-reviewed per analizzare l'alimentazione di cani e gatti, come Yuka ma per i nostri amici a 4 zampe."
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* Hero Section */}

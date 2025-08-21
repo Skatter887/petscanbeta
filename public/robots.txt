@@ -1,8 +1,27 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://mypetscan.it/sitemap.xml
+
+# Crawl-delay per evitare sovraccarico del server
+Crawl-delay: 1
+
+# Blocca accesso a file non necessari
+Disallow: /src/
+Disallow: /node_modules/
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /*.map$
+
+# Permetti accesso ai bot principali
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 0.5
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 0.5
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +29,12 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
-Allow: /
+# Blocca bot dannosi
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /

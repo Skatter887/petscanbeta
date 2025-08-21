@@ -4,12 +4,31 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SEOHead from '@/components/SEOHead';
 
 const PrivacyPolicy = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Privacy Policy - PetScan",
+    "description": "Informativa sulla privacy di PetScan - Come raccogliamo e utilizziamo i tuoi dati per il servizio di analisi dell'alimentazione per cani e gatti",
+    "dateModified": "2024-06-10",
+    "publisher": {
+      "@type": "Organization",
+      "name": "PetScan"
+    }
+  };
+
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title="Privacy Policy - PetScan"
+        description="Informativa sulla privacy di PetScan - Come raccogliamo e utilizziamo i tuoi dati per il servizio di analisi dell'alimentazione per cani e gatti"
+        keywords="privacy policy, petscan, protezione dati, GDPR, informativa privacy"
+        structuredData={structuredData}
+      />
       <Header />
       
       <section className="py-20 px-4">

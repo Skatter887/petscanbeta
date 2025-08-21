@@ -4,12 +4,31 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SEOHead from '@/components/SEOHead';
 
 const TermsOfService = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Termini di Servizio - PetScan",
+    "description": "Termini e condizioni per l'utilizzo del servizio PetScan - Analisi dell'alimentazione per cani e gatti",
+    "dateModified": "2024-06-10",
+    "publisher": {
+      "@type": "Organization",
+      "name": "PetScan"
+    }
+  };
+
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title="Termini di Servizio - PetScan"
+        description="Termini e condizioni per l'utilizzo del servizio PetScan - Analisi dell'alimentazione per cani e gatti"
+        keywords="termini di servizio, petscan, condizioni d'uso, servizio analisi alimentare"
+        structuredData={structuredData}
+      />
       <Header />
       
       <section className="py-20 px-4">

@@ -2,8 +2,25 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Instagram, Home, User, Award, Lightbulb, Mail, CheckSquare, Cat, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import SEOHead from '@/components/SEOHead';
 
 const CatAnalysis = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "AnalysisPage",
+    "name": "Analisi Cibo per Gatti - PetScan",
+    "description": "Analisi completa e personalizzata del cibo per gatti con PetScan. Scopri se l'alimentazione del tuo gatto è sana e bilanciata.",
+    "mainEntity": {
+      "@type": "Service",
+      "name": "Analisi Alimentare per Gatti",
+      "description": "Servizio di analisi dell'alimentazione per gatti con intelligenza artificiale",
+      "provider": {
+        "@type": "Organization",
+        "name": "PetScan"
+      }
+    }
+  };
+
   const [activeSection, setActiveSection] = useState('');
   const [showShareMenu, setShowShareMenu] = useState(false);
 
@@ -63,6 +80,11 @@ const CatAnalysis = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50 pb-24">
+      <SEOHead
+        title="Analisi Cibo per Gatti - PetScan"
+        description="Analisi completa e personalizzata del cibo per gatti con PetScan. Scopri se l'alimentazione del tuo gatto è sana e bilanciata."
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* HERO SECTION */}

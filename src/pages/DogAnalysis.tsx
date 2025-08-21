@@ -3,8 +3,25 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Instagram, Home, User, Award, Lightbulb, Mail, CheckSquare, Dog, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import SEOHead from '@/components/SEOHead';
 
 const DogAnalysis = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "AnalysisPage",
+    "name": "Analisi Cibo per Cani - PetScan",
+    "description": "Analisi completa e personalizzata del cibo per cani con PetScan. Scopri se l'alimentazione del tuo cane è sana e bilanciata.",
+    "mainEntity": {
+      "@type": "Service",
+      "name": "Analisi Alimentare per Cani",
+      "description": "Servizio di analisi dell'alimentazione per cani con intelligenza artificiale",
+      "provider": {
+        "@type": "Organization",
+        "name": "PetScan"
+      }
+    }
+  };
+
   const [activeSection, setActiveSection] = useState('');
   const [showShareMenu, setShowShareMenu] = useState(false);
 
@@ -64,6 +81,11 @@ const DogAnalysis = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-orange-50 pb-24">
+      <SEOHead
+        title="Analisi Cibo per Cani - PetScan"
+        description="Analisi completa e personalizzata del cibo per cani con PetScan. Scopri se l'alimentazione del tuo cane è sana e bilanciata."
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* HERO SECTION */}

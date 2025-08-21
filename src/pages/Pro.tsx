@@ -3,8 +3,28 @@ import { Check, Star, Zap, Heart, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import SEOHead from '@/components/SEOHead';
 
 const Pro = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "PetScan Pro",
+    "description": "Piano premium per analisi avanzata dell'alimentazione di cani e gatti con funzionalità esclusive",
+    "brand": {
+      "@type": "Brand",
+      "name": "PetScan"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "9.99",
+      "priceCurrency": "EUR",
+      "priceValidUntil": "2025-12-31",
+      "availability": "https://schema.org/InStock"
+    },
+    "category": "Pet Food Analysis Service"
+  };
+
   const features = {
     free: [
       "Analisi base del prodotto",
@@ -27,6 +47,11 @@ const Pro = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead
+        title="PetScan Pro - Analisi Alimentare Premium"
+        description="Piano premium per analisi avanzata dell'alimentazione di cani e gatti con funzionalità esclusive"
+        structuredData={structuredData}
+      />
       <Header />
       
       {/* Hero Section */}
