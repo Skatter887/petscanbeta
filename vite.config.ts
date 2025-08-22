@@ -19,4 +19,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // FIX per Netlify - usa percorsi relativi
+  base: "./",
+  build: {
+    outDir: "dist",
+    assetsDir: "assets",
+  },
 }));
