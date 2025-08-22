@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   // FIX per Netlify - usa percorsi relativi
-  base: "./",
+  base: "/", // Torna a percorsi assoluti
   build: {
     outDir: "dist",
     assetsDir: "assets",
