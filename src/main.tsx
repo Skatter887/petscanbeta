@@ -1,11 +1,10 @@
 import { createRoot } from 'react-dom/client'
-// import { HelmetProvider } from 'react-helmet-async' // COMMENTA TEMPORANEAMENTE
+import { HelmetProvider } from 'react-helmet-async' // Riabilita
 import App from './App.tsx'
 import './index.css'
 
 // Debug: verifica che l'elemento root esista
 const rootElement = document.getElementById("root");
-console.log("Root element found:", rootElement);
 
 if (!rootElement) {
   throw new Error("Root element not found");
@@ -14,11 +13,10 @@ if (!rootElement) {
 try {
   const root = createRoot(rootElement);
   root.render(
-    // <HelmetProvider> // COMMENTA TEMPORANEAMENTE
+    <HelmetProvider> {/* Riabilita */}
       <App />
-    // </HelmetProvider> // COMMENTA TEMPORANEAMENTE
+    </HelmetProvider>
   );
-  console.log("React app mounted successfully");
 } catch (error) {
   console.error("Error mounting React app:", error);
   rootElement.innerHTML = `
