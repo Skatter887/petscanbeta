@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client'
-import { HelmetProvider } from 'react-helmet-async'
+// import { HelmetProvider } from 'react-helmet-async' // COMMENTA TEMPORANEAMENTE
 import App from './App.tsx'
 import './index.css'
 
@@ -14,14 +14,13 @@ if (!rootElement) {
 try {
   const root = createRoot(rootElement);
   root.render(
-    <HelmetProvider>
+    // <HelmetProvider> // COMMENTA TEMPORANEAMENTE
       <App />
-    </HelmetProvider>
+    // </HelmetProvider> // COMMENTA TEMPORANEAMENTE
   );
   console.log("React app mounted successfully");
 } catch (error) {
   console.error("Error mounting React app:", error);
-  // Fallback: mostra un messaggio di errore
   rootElement.innerHTML = `
     <div style="padding: 20px; text-align: center;">
       <h1>Errore nel caricamento dell'app</h1>
